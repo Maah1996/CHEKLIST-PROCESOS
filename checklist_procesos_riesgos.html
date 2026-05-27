@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checklist — Archivador de Procesos y Riesgos</title>
+
+<!-- Firebase SDK (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<style id="sty-page">@page { size: A4 portrait; margin: 13mm 12mm 16mm; }</style>
+<style>
+/* ===== RESET ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --az1: #1F3864; --az2: #2E5496; --az3: #D6E4F7;
+  --verde: #1e7e34; --verde-bg: #d4edda;
+  --rojo: #c82333;  --rojo-bg:  #f8d7da;
+  --amar: #b07d00;  --amar-bg:  #fff3cd;
+}
+
+body { font-family: Arial, Helvetica, sans-serif; font-size: 14px; background: #e8eef7; color: #1a1a1a; line-height: 1.5; }
+
+/* ===== LAYOUT ===== */
+.wrap { max-width: 1200px; margin: 20px auto; padding: 0 16px 48px; }
+
+/* ===== HEADER ===== */
+.hdr {
+  background: linear-gradient(135deg, #1F3864 0%, #2a4b8d 100%);
+  color: #fff; text-align: center;
+  padding: 18px 20px 14px;
+  border-radius: 10px 10px 0 0;
+}
+.hdr h1 { font-size: clamp(20px, 4vw, 30px); font-weight: 900; letter-spacing: 2px; margin-bottom: 4px; }
+.hdr-sub2 { font-size: clamp(10px, 1.5vw, 12px); color: #90aace; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; }
+.hdr-sub  { font-size: clamp(12px, 2vw, 15px); color: #a8c4e8; }
+.hdr-unidad { color: #FFD700; font-weight: 700; }
+
+/* ===== IDENTIFICACIÓN ===== */
+.id-bar {
+  background: #fff; border: 1px solid #c8d4e8; border-top: none;
+  padding: 12px 20px;
+  display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px;
+  margin-bottom: 14px;
+}
+@media (max-width: 700px) { .id-bar { grid-template-columns: 1fr; } }
+
+.campo { display: flex; flex-direction: column; gap: 3px; }
+.campo label { font-size: 10px; font-weight: 700; color: var(--az1); text-transform: uppercase; letter-spacing: 0.3px; }
+
+/* Unidad row: select + gear button */
+.unidad-row { display: flex; gap: 6px; align-items: center; }
+.select-unidad {
+  flex: 1; border: 1px solid #bcc8da; border-radius: 5px;
+  padding: 7px 10px; font-size: 13px; font-family: inherit;
+  background: #fff; cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+  padding-right: 28px;
+}
+.select-unidad:focus { outline: none; border-color: var(--az2); box-shadow: 0 0 0 3px rgba(46,84,150,.15); }
+.btn-gear {
+  flex-shrink: 0; width: 34px; height: 34px;
+  background: var(--az3); border: 1px solid #a8c0df; border-radius: 6px;
+  cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;
+  transition: background .2s;
+}
+.btn-gear:hover { background: #b8d4f0; }
+
+.campo input, .campo .fake-input {
+  border: 1px solid #bcc8da; border-radius: 5px;
+  padding: 7px 10px; font-size: 13px; font-family: inherit; width: 100%;
+}
+.campo input:focus { outline: none; border-color: var(--az2); box-shadow: 0 0 0 3px rgba(46,84,150,.15); }
+
+/* ===== INDICADOR ===== */
+.indicador {
+  background: #fff; border: 1px solid #c8d4e8;
+  padding: 16px 20px; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+}
+.ind-txt { flex: 1; min-width: 160px; }
+.ind-label { font-size: 10px; font-weight: 700; color: var(--az1); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 2px; }
+#pct { font-size: clamp(46px, 10vw, 68px); font-weight: 900; line-height: 1; transition: color .35s; font-variant-numeric: tabular-nums; }
+.c-rojo  { color: #dc3545 !important; } .c-amar { color: #c78b00 !important; } .c-verde { color: #1e7e34 !important; }
+.formula-bar { font-size: 11px; color: #666; margin-top: 4px; }
+.semaforo { display: flex; align-items: center; gap: 8px; }
+.luces { display: flex; gap: 5px; background: #252525; border-radius: 30px; padding: 5px 9px; }
+.luz { width: 18px; height: 18px; border-radius: 50%; opacity: .18; transition: opacity .35s, box-shadow .35s; }
+.luz-r { background: #dc3545; } .luz-a { background: #ffc107; } .luz-v { background: #28a745; }
+.luz.on { opacity: 1; }
+.luz-r.on { box-shadow: 0 0 8px #dc3545; } .luz-a.on { box-shadow: 0 0 8px #ffc107; } .luz-v.on { box-shadow: 0 0 8px #28a745; }
+.sem-txt { font-size: 12px; color: #555; }
+
+/* ===== SAVE STATUS ===== */
+.save-bar {
+  display: flex; align-items: center; gap: 10px;
+  background: #fff; border: 1px solid #c8d4e8; border-top: none;
+  padding: 8px 20px; margin-bottom: 14px; flex-wrap: wrap;
+}
+.save-status {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; padding: 4px 10px; border-radius: 20px;
+  transition: all .3s;
+}
+.save-status.idle    { color: #888; background: #f0f0f0; }
+.save-status.saving  { color: #b07d00; background: #fff3cd; }
+.save-status.ok      { color: #1e7e34; background: #d4edda; }
+.save-status.err     { color: #c82333; background: #f8d7da; }
+
+/* ===== BOTONES ===== */
+.btns { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 16px; border: none; border-radius: 6px;
+  cursor: pointer; font-size: 13px; font-weight: 700; font-family: inherit;
+  transition: filter .2s, transform .1s;
+}
+.btn:hover { filter: brightness(.87); transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn-guardar  { background: #0d6efd; color: #fff; }
+.btn-hist     { background: var(--az2); color: #fff; }
+.btn-impr     { background: var(--az1); color: #fff; }
+.btn-excel    { background: #217346; color: #fff; }
+.btn-limpiar  { background: #b02a37; color: #fff; }
+.btn-fb-cfg   { background: #f5a623; color: #fff; }
+.btn:disabled { opacity: .5; cursor: not-allowed; transform: none !important; }
+
+/* ===== SECCIÓN ===== */
+.sec-hdr { background: var(--az2); color: #fff; padding: 8px 16px; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+
+/* ===== TABLA ===== */
+.tbl-wrap { overflow-x: auto; border: 1px solid #c0cce0; border-top: none; margin-bottom: 18px; border-radius: 0 0 8px 8px; }
+table { width: 100%; border-collapse: collapse; min-width: 560px; }
+thead th { background: var(--az1); color: #fff; padding: 8px 10px; text-align: center; font-size: 12px; font-weight: 700; border: 1px solid rgba(255,255,255,.14); white-space: nowrap; }
+thead th.th-l { text-align: left; }
+tbody tr { transition: background-color .22s; }
+tbody tr:nth-child(even) { background: #f5f8ff; }
+tbody tr:nth-child(odd)  { background: #fff; }
+tbody tr.s-si   { background: var(--verde-bg) !important; }
+tbody tr.s-no   { background: var(--rojo-bg)  !important; }
+tbody tr.s-proc { background: var(--amar-bg)  !important; }
+td { padding: 6px 9px; border: 1px solid #d4dcea; vertical-align: middle; font-size: 12.5px; }
+td.td-n  { text-align: center; font-weight: 700; color: var(--az2); width: 40px; }
+td.td-r  { text-align: center; width: 68px; }
+td.td-ob { min-width: 160px; }
+
+/* Checkboxes (radio styled) */
+.chk { appearance: none; -webkit-appearance: none; width: 21px; height: 21px; border: 2px solid #aab4c8; border-radius: 5px; cursor: pointer; position: relative; display: inline-block; vertical-align: middle; transition: all .18s; }
+.chk:hover:not(:checked) { border-color: var(--az2); background: #ebf0ff; }
+.chk:checked::after { content: '✓'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 13px; font-weight: 900; color: #fff; line-height: 1; }
+.chk-si:checked   { background: #28a745; border-color: #28a745; }
+.chk-no:checked   { background: #dc3545; border-color: #dc3545; }
+.chk-proc:checked { background: #c78b00; border-color: #c78b00; }
+
+.obs { width: 100%; min-height: 28px; border: 1px solid #cdd6e8; border-radius: 4px; padding: 3px 7px; font-family: inherit; font-size: 12px; resize: vertical; }
+.obs:focus { outline: none; border-color: var(--az2); }
+
+/* ===== RESUMEN ===== */
+.resumen { background: #fff; border: 2px solid var(--az2); border-radius: 8px; padding: 14px 18px; margin-bottom: 14px; }
+.res-titulo { font-size: 11px; font-weight: 700; color: var(--az1); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+.res-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: flex; align-items: center; gap: 8px; background: #f0f4fb; border: 1px solid #cdd6e8; border-radius: 8px; padding: 8px 14px; min-width: 90px; }
+.chip-n { font-size: 24px; font-weight: 900; line-height: 1; }
+.chip-t { font-size: 10px; color: #555; line-height: 1.4; }
+.n-tot { color: var(--az1); } .n-si { color: #1e7e34; } .n-no { color: #c82333; } .n-proc { color: #b07d00; } .n-sin { color: #888; }
+
+/* ===== LEYENDA ===== */
+.leyenda { background: #f5f8ff; border: 1px solid #cdd6e8; border-radius: 8px; padding: 10px 14px; margin-bottom: 18px; }
+.leyenda h4 { font-size: 10px; font-weight: 700; color: var(--az1); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 7px; }
+.ley-items { display: flex; flex-wrap: wrap; gap: 12px; }
+.ley-item  { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.ley-dot   { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+.d-si   { background: var(--verde-bg); border: 1px solid #28a745; }
+.d-no   { background: var(--rojo-bg);  border: 1px solid #dc3545; }
+.d-proc { background: var(--amar-bg);  border: 1px solid #c78b00; }
+
+/* ===== MODALES (base) ===== */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 9000;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(3px);
+}
+.modal-box {
+  background: #fff; border-radius: 12px; padding: 24px 28px;
+  width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,.3);
+  max-height: 90vh; overflow-y: auto;
+}
+.modal-box h3 { font-size: 16px; font-weight: 700; color: var(--az1); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+.modal-close {
+  margin-left: auto; background: none; border: none;
+  font-size: 20px; cursor: pointer; color: #888; line-height: 1;
+}
+.modal-close:hover { color: #333; }
+
+/* ===== MODAL UNIDADES ===== */
+#units-modal .modal-box { max-width: 480px; }
+.add-unit-row { display: flex; gap: 8px; margin-bottom: 14px; }
+.add-unit-row input {
+  flex: 1; border: 1px solid #bcc8da; border-radius: 5px;
+  padding: 7px 10px; font-size: 13px; font-family: inherit;
+}
+.add-unit-row input:focus { outline: none; border-color: var(--az2); }
+.btn-add-unit { background: var(--az2); color: #fff; border: none; border-radius: 5px; padding: 7px 14px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.btn-add-unit:hover { filter: brightness(.88); }
+
+#units-list { list-style: none; border: 1px solid #e0e8f0; border-radius: 6px; overflow: hidden; max-height: 360px; overflow-y: auto; }
+.unit-item { display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-bottom: 1px solid #eef2f8; }
+.unit-item:last-child { border-bottom: none; }
+.unit-item:nth-child(even) { background: #f8faff; }
+.unit-num { font-size: 10px; font-weight: 700; color: #aaa; width: 20px; flex-shrink: 0; }
+.unit-name { flex: 1; font-size: 13px; color: #222; }
+.unit-edit-inp { flex: 1; border: 1px solid var(--az2); border-radius: 4px; padding: 4px 8px; font-size: 13px; font-family: inherit; }
+.unit-btns { display: flex; gap: 4px; }
+.btn-u { border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px; cursor: pointer; font-family: inherit; }
+.btn-u-edit  { background: #e8f0ff; color: var(--az2); }
+.btn-u-del   { background: #fde8e8; color: #c82333; }
+.btn-u-save  { background: #d4edda; color: #1e7e34; }
+.btn-u-cancel{ background: #f0f0f0; color: #555; }
+.btn-u:hover { filter: brightness(.88); }
+
+/* ===== MODAL FIREBASE CONFIG ===== */
+#fb-modal .modal-box { max-width: 520px; }
+.fb-steps { font-size: 12.5px; color: #555; margin-bottom: 14px; line-height: 1.7; }
+.fb-steps code { background: #f0f4ff; padding: 1px 5px; border-radius: 3px; font-size: 11.5px; }
+#fb-config-input {
+  width: 100%; height: 200px; border: 1px solid #bcc8da; border-radius: 6px;
+  padding: 10px; font-family: 'Courier New', monospace; font-size: 12px;
+  resize: vertical; margin-bottom: 12px; color: #1a1a1a;
+}
+#fb-config-input:focus { outline: none; border-color: var(--az2); }
+.fb-error { font-size: 12px; color: #c82333; margin-bottom: 8px; display: none; }
+.fb-ok    { font-size: 12px; color: #1e7e34; margin-bottom: 8px; display: none; }
+
+/* ===== MODAL HISTORIAL ===== */
+#hist-modal .modal-box { max-width: 680px; }
+.hist-filter { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+.hist-filter label { font-size: 12px; font-weight: 700; color: var(--az1); }
+.hist-filter select { border: 1px solid #bcc8da; border-radius: 5px; padding: 5px 8px; font-size: 12px; font-family: inherit; flex: 1; min-width: 180px; }
+.btn-hist-search { background: var(--az2); color: #fff; border: none; border-radius: 5px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; }
+.btn-hist-search:hover { filter: brightness(.88); }
+#hist-list { border: 1px solid #e0e8f0; border-radius: 6px; overflow: hidden; min-height: 60px; }
+.hist-empty { text-align: center; padding: 24px; color: #888; font-size: 13px; }
+.hist-loading { text-align: center; padding: 20px; color: #555; font-size: 13px; }
+.hist-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-bottom: 1px solid #eef2f8; flex-wrap: wrap;
+}
+.hist-item:last-child { border-bottom: none; }
+.hist-item:nth-child(even) { background: #f8faff; }
+.hist-info { flex: 1; min-width: 200px; }
+.hist-unidad { font-size: 13px; font-weight: 700; color: var(--az1); }
+.hist-meta { font-size: 11px; color: #777; margin-top: 1px; }
+.hist-pct { font-size: 18px; font-weight: 900; min-width: 52px; text-align: center; }
+.hist-pct.c-rojo { color: #dc3545; } .hist-pct.c-amar { color: #c78b00; } .hist-pct.c-verde { color: #1e7e34; }
+.btn-hist-load { background: var(--az1); color: #fff; border: none; border-radius: 5px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.btn-hist-load:hover { filter: brightness(.85); }
+.btn-hist-del { background: #fde8e8; color: #c82333; border: none; border-radius: 5px; padding: 6px 10px; font-size: 12px; cursor: pointer; }
+.btn-hist-del:hover { filter: brightness(.88); }
+
+/* ===== MODAL IMPRESIÓN ===== */
+#print-modal .modal-box { max-width: 400px; }
+.modal-section-title { font-size: 10px; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px; }
+.orient-opts { display: flex; gap: 10px; }
+.orient-card { flex: 1; border: 2px solid #d0dae8; border-radius: 8px; padding: 12px 8px 8px; cursor: pointer; text-align: center; transition: border-color .2s, background .2s; user-select: none; }
+.orient-card:hover { border-color: var(--az2); background: #f0f4ff; }
+.orient-card.active { border-color: var(--az2); background: #ebf2ff; }
+.orient-card input[type=radio] { display: none; }
+.orient-icon { display: block; margin: 0 auto 6px; border: 2px solid #888; background: #f8f8f8; }
+.orient-card.active .orient-icon { border-color: var(--az2); }
+.icon-portrait  { width: 28px; height: 36px; }
+.icon-landscape { width: 46px; height: 32px; }
+.orient-label { font-size: 12px; font-weight: 600; color: #333; }
+.orient-sub   { font-size: 10px; color: #888; margin-top: 1px; }
+
+.modal-btns { display: flex; gap: 10px; margin-top: 18px; }
+.modal-btns button { flex: 1; padding: 10px 14px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 700; font-family: inherit; }
+.modal-btns button:hover { filter: brightness(.88); }
+.btn-do-print { background: var(--az1); color: #fff; }
+.btn-cancel   { background: #e8ecf2; color: #333; }
+
+/* ===== PRINT ONLY / SCREEN ONLY ===== */
+.print-only { display: none; }
+.screen-only { }
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body { background: #fff !important; font-size: 10.5pt; }
+  .wrap { margin: 0 !important; padding: 0 !important; max-width: 100% !important; }
+  .modal-overlay, .btns, .save-bar, .screen-only { display: none !important; }
+  .print-only { display: block !important; }
+  .hdr { border-radius: 0 !important; background: var(--az1) !important; padding: 12px 16px 10px !important; }
+  .hdr h1 { font-size: 20pt !important; }
+  .hdr-sub2 { font-size: 9pt !important; }
+  .hdr-sub  { font-size: 10pt !important; }
+  .id-bar { display: grid !important; grid-template-columns: 2fr 1fr 1fr !important; padding: 8px 16px !important; border-top: 1px solid #c8d4e8 !important; }
+  .campo label { font-size: 7.5pt !important; }
+  .select-unidad, .campo input { display: none !important; }
+  .print-val { display: block !important; font-size: 10pt !important; font-weight: 700 !important; border-bottom: 1px solid #aaa !important; padding: 1px 0 !important; min-height: 16px; }
+  .indicador { padding: 8px 16px !important; }
+  .ind-label { font-size: 8pt !important; }
+  #pct { font-size: 26pt !important; }
+  .formula-bar { font-size: 8pt !important; }
+  .semaforo { display: none !important; }
+  .sec-hdr { background: var(--az2) !important; font-size: 8.5pt !important; padding: 5px 12px !important; page-break-after: avoid; }
+  .tbl-wrap { overflow: visible !important; border-radius: 0 !important; border: 1px solid #b0bccf !important; border-top: none !important; margin-bottom: 12px !important; }
+  table { min-width: auto !important; font-size: 8.5pt !important; }
+  thead th { background: var(--az1) !important; font-size: 8pt !important; padding: 5px 7px !important; }
+  td { padding: 4px 6px !important; font-size: 8.5pt !important; border: 1px solid #c8d0e0 !important; }
+  tbody tr.s-si   { background: var(--verde-bg) !important; }
+  tbody tr.s-no   { background: var(--rojo-bg)  !important; }
+  tbody tr.s-proc { background: var(--amar-bg)  !important; }
+  .chk { display: none !important; }
+  td.td-col-si::before, td.td-col-no::before, td.td-col-proc::before { content: '□'; font-size: 11pt; color: #ccc; display: block; text-align: center; }
+  tr.s-si   td.td-col-si::before   { content: '✔'; color: #28a745 !important; font-weight: 900; }
+  tr.s-no   td.td-col-no::before   { content: '✖'; color: #dc3545 !important; font-weight: 900; }
+  tr.s-proc td.td-col-proc::before { content: '◑'; color: #c78b00 !important; font-weight: 900; }
+  .obs { border: none !important; resize: none !important; padding: 0 !important; font-size: 8pt !important; background: transparent !important; min-height: auto !important; }
+  .resumen { border: 1.5px solid var(--az2) !important; padding: 8px 12px !important; margin-bottom: 8px !important; page-break-inside: avoid; }
+  .chip-n { font-size: 16pt !important; }
+  .leyenda { padding: 7px 12px !important; margin-bottom: 8px !important; page-break-inside: avoid; }
+  tr { page-break-inside: avoid; }
+  .print-footer { display: flex !important; position: fixed; bottom: 0; left: 0; right: 0; border-top: 1px solid #ddd; padding: 3px 12px; font-size: 7pt; color: #888; justify-content: space-between; background: #fff; }
+}
+
+@media (max-width: 640px) {
+  .wrap { padding: 0 8px 32px; margin: 8px auto; }
+  .hdr { padding: 14px 12px; }
+  .indicador { flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     MODAL: GESTIONAR UNIDADES
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="units-modal" style="display:none" role="dialog" aria-label="Gestionar unidades">
+  <div class="modal-box">
+    <h3>&#9881; Gestionar Unidades <button class="modal-close" onclick="closeUnitsModal()" title="Cerrar">&#10005;</button></h3>
+    <div class="add-unit-row">
+      <input type="text" id="new-unit-inp" placeholder="Nombre de nueva unidad..." autocomplete="off">
+      <button class="btn-add-unit" onclick="addUnit()">+ Agregar</button>
+    </div>
+    <ul id="units-list"></ul>
+    <div style="margin-top:14px; text-align:right">
+      <button class="btn cancel" style="background:#e8ecf2;border:none;border-radius:6px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer" onclick="closeUnitsModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: CONFIGURAR FIREBASE
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="fb-modal" style="display:none" role="dialog" aria-label="Configurar Firebase">
+  <div class="modal-box">
+    <h3>&#128293; Conectar con Firebase <button class="modal-close" onclick="closeFbModal()" title="Cerrar">&#10005;</button></h3>
+    <div class="fb-steps">
+      Obtén tu configuración en:<br>
+      <strong>Firebase Console</strong> → tu proyecto → &#9881; <em>Configuración</em> → <em>Tus apps</em> → <em>SDK de configuración</em><br><br>
+      Copia solo el objeto <code>firebaseConfig = { ... }</code> y pégalo abajo:<br><br>
+      <strong>Reglas Firestore requeridas</strong> (modo prueba):<br>
+      <code>allow read, write: if true;</code>
+    </div>
+    <textarea id="fb-config-input" placeholder='{&#10;  "apiKey": "AIza...",&#10;  "authDomain": "tu-proyecto.firebaseapp.com",&#10;  "projectId": "tu-proyecto",&#10;  "storageBucket": "...",&#10;  "messagingSenderId": "...",&#10;  "appId": "..."&#10;}'></textarea>
+    <div class="fb-error" id="fb-error"></div>
+    <div class="fb-ok"    id="fb-ok">&#10003; Firebase conectado correctamente.</div>
+    <div class="modal-btns">
+      <button class="btn-do-print" onclick="saveFbConfig()">&#128293; Conectar</button>
+      <button class="btn-cancel"   onclick="closeFbModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: HISTORIAL
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="hist-modal" style="display:none" role="dialog" aria-label="Historial de checklists">
+  <div class="modal-box">
+    <h3>&#128337; Historial de Checklists <button class="modal-close" onclick="closeHistModal()" title="Cerrar">&#10005;</button></h3>
+    <div class="hist-filter">
+      <label>Unidad:</label>
+      <select id="hist-unit-sel">
+        <option value="">— Todas las unidades —</option>
+      </select>
+      <button class="btn-hist-search" onclick="loadHistory()">Buscar</button>
+    </div>
+    <div id="hist-list"><div class="hist-empty">Haz clic en "Buscar" para cargar el historial.</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: IMPRIMIR / PDF
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="print-modal" style="display:none" role="dialog" aria-label="Opciones de impresión">
+  <div class="modal-box">
+    <h3>&#128424; Imprimir / Guardar PDF <button class="modal-close" onclick="closePrintModal()" title="Cerrar">&#10005;</button></h3>
+    <div class="modal-section-title">Orientación de página</div>
+    <div class="orient-opts">
+      <label class="orient-card active" id="card-portrait" onclick="selectOrient('portrait')">
+        <input type="radio" name="orient" value="portrait" checked>
+        <span class="orient-icon icon-portrait"></span>
+        <div class="orient-label">Vertical</div>
+        <div class="orient-sub">A4 Portrait</div>
+      </label>
+      <label class="orient-card" id="card-landscape" onclick="selectOrient('landscape')">
+        <input type="radio" name="orient" value="landscape">
+        <span class="orient-icon icon-landscape"></span>
+        <div class="orient-label">Horizontal</div>
+        <div class="orient-sub">A4 Landscape</div>
+      </label>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-do-print" onclick="doPrint()">&#128424; Imprimir / Guardar PDF</button>
+      <button class="btn-cancel"   onclick="closePrintModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     CONTENIDO PRINCIPAL
+══════════════════════════════════════════ -->
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header class="hdr">
+    <h1>CHECKLIST</h1>
+    <p class="hdr-sub2">Verificación — Archivador de Procesos y Riesgos</p>
+    <p class="hdr-sub"><span class="hdr-unidad" id="hdr-unidad">(SELECCIONE UNA UNIDAD)</span></p>
+  </header>
+
+  <!-- IDENTIFICACIÓN -->
+  <div class="id-bar">
+    <div class="campo">
+      <label for="f-unidad">Unidad</label>
+      <div class="unidad-row">
+        <select id="f-unidad" class="select-unidad" aria-label="Seleccionar unidad">
+          <option value="">— Seleccione una unidad —</option>
+        </select>
+        <button class="btn-gear" onclick="openUnitsModal()" title="Gestionar unidades">&#9881;</button>
+      </div>
+    </div>
+    <div class="campo">
+      <label for="f-fecha">Fecha de revisión</label>
+      <input type="date" id="f-fecha">
+    </div>
+    <div class="campo">
+      <label for="f-revisor">Revisado por</label>
+      <input type="text" id="f-revisor" placeholder="Nombre del revisor" autocomplete="off">
+    </div>
+  </div>
+
+  <!-- INDICADOR -->
+  <div class="indicador">
+    <div class="ind-txt">
+      <div class="ind-label">Archivador Terminado</div>
+      <div id="pct" class="c-rojo">0%</div>
+      <div class="formula-bar" id="formula-bar">(0 × 1 + 0 × 0,5) / 20 = 0,0 puntos</div>
+    </div>
+    <div class="semaforo">
+      <div class="luces">
+        <div class="luz luz-r on" id="luz-r"></div>
+        <div class="luz luz-a"    id="luz-a"></div>
+        <div class="luz luz-v"    id="luz-v"></div>
+      </div>
+      <span class="sem-txt" id="sem-txt">Sin avance</span>
+    </div>
+  </div>
+
+  <!-- BARRA DE ESTADO GUARDADO -->
+  <div class="save-bar screen-only">
+    <span class="save-status idle" id="save-status">&#128190; Sin guardar</span>
+    <span style="font-size:11px;color:#888" id="save-info"></span>
+  </div>
+
+  <!-- BOTONES -->
+  <div class="btns screen-only">
+    <button class="btn btn-guardar"  id="btn-guardar" onclick="guardarFirebase()">&#128190; Guardar</button>
+    <button class="btn btn-hist"     onclick="openHistModal()">&#128337; Historial</button>
+    <button class="btn btn-impr"     onclick="openPrintModal()">&#128424; Imprimir / PDF</button>
+    <button class="btn btn-excel"    onclick="exportCSV()">&#128202; Excel (CSV)</button>
+    <button class="btn btn-limpiar"  onclick="limpiar()">&#128465; Limpiar</button>
+    <button class="btn btn-fb-cfg"   onclick="openFbModal()" title="Configurar Firebase">&#128293; Firebase</button>
+  </div>
+
+  <!-- SECCIÓN A -->
+  <div class="sec-hdr">Sección A — Archivador Físico Impreso — Procesos y Riesgos de la Unidad</div>
+  <div class="tbl-wrap">
+    <table aria-label="Sección A">
+      <thead><tr>
+        <th style="width:38px">N°</th>
+        <th class="th-l">Documento / Contenido</th>
+        <th style="width:64px">Sí</th>
+        <th style="width:64px">No</th>
+        <th style="width:90px">En Proceso</th>
+        <th>Observaciones</th>
+      </tr></thead>
+      <tbody id="tbody-a"></tbody>
+    </table>
+  </div>
+
+  <!-- SECCIÓN B -->
+  <div class="sec-hdr">Sección B — Carpeta Digital "Procesos y Riesgos de <span id="secb-unidad">(Nombre Unidad)</span>"</div>
+  <div class="tbl-wrap">
+    <table aria-label="Sección B">
+      <thead><tr>
+        <th style="width:38px">N°</th>
+        <th class="th-l">Documento / Contenido</th>
+        <th style="width:64px">Sí</th>
+        <th style="width:64px">No</th>
+        <th style="width:90px">En Proceso</th>
+        <th>Observaciones</th>
+      </tr></thead>
+      <tbody id="tbody-b"></tbody>
+    </table>
+  </div>
+
+  <!-- RESUMEN -->
+  <div class="resumen">
+    <div class="res-titulo">Resumen de avance</div>
+    <div class="res-chips">
+      <div class="chip"><span class="chip-n n-tot">20</span><span class="chip-t">Total<br>docs</span></div>
+      <div class="chip"><span class="chip-n n-si"   id="r-si">0</span><span class="chip-t">Marcados<br>Sí</span></div>
+      <div class="chip"><span class="chip-n n-no"   id="r-no">0</span><span class="chip-t">Marcados<br>No</span></div>
+      <div class="chip"><span class="chip-n n-proc" id="r-proc">0</span><span class="chip-t">En<br>Proceso</span></div>
+      <div class="chip"><span class="chip-n n-sin"  id="r-sin">20</span><span class="chip-t">Sin<br>marcar</span></div>
+    </div>
+  </div>
+
+  <!-- LEYENDA -->
+  <div class="leyenda">
+    <h4>Leyenda</h4>
+    <div class="ley-items">
+      <div class="ley-item"><div class="ley-dot d-si"></div><span><strong>Sí:</strong> Documento presente y completo. Suma 1 punto.</span></div>
+      <div class="ley-item"><div class="ley-dot d-no"></div><span><strong>No:</strong> Documento no se encuentra. No suma.</span></div>
+      <div class="ley-item"><div class="ley-dot d-proc"></div><span><strong>En Proceso:</strong> En elaboración o pendiente. Suma 0,5 punto.</span></div>
+    </div>
+  </div>
+
+  <!-- PIE DE PÁGINA (solo impresión) -->
+  <div class="print-footer print-only" id="print-footer">
+    <span id="pf-unidad"></span>
+    <span id="pf-fecha-imp"></span>
+  </div>
+
+</div><!-- /wrap -->
+
+<!-- ══════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════ -->
+<script>
+(function () {
+'use strict';
+
+/* ── Constantes ── */
+var KEY_DATA  = 'chk_proc_v2';
+var KEY_UNITS = 'chk_units_v1';
+var KEY_FB    = 'chk_fb_config';
+var TOTAL     = 20;
+var COL       = 'chk_procesos_riesgos';
+
+var DEFAULT_UNITS = [
+  '4ª BRIACO "CHORRILLOS"',
+  'DESACO Nº 5 "LANCEROS"',
+  'R. 10 "PUDETO"',
+  'DESMOT Nº 11 "CAUPOLICÁN"',
+  'RL Nº 5 "MAGALLANES"',
+  'JEFATURA ADM. Y LOGÍSTICA',
+  'CENTRO DE ASUNTOS ANTÁRTICOS',
+  'DEPARTAMENTO I',
+  'DEPARTAMENTO II',
+  'DEPARTAMENTO III',
+  'DEPARTAMENTO IV',
+  'DEPARTAMENTO V',
+  'DEPARTAMENTO VI',
+  'DEPARTAMENTO VIII',
+  'DEPARTAMENTO DICE'
+];
+
+var DOCS_A = [
+  'Carátula','Índice',
+  'Misión y tareas fundamentales de la unidad',
+  'Organigrama de la unidad',
+  'Política de riesgos institucional y subsidiarias',
+  'Identificación de productos y servicios (tabla 2)',
+  'Inventario de procesos y subprocesos de la unidad (anexo 2)',
+  'Mapa de procesos de la unidad (Fig. 4)',
+  'Resolución exenta que aprueba los procesos y subprocesos internos',
+  'Acta del Comité de Riesgos de la Unidad que aprueba sus procesos críticos y valor de contribución de los subprocesos desagregados',
+  'Actas de cada una de las sesiones del CORI, respecto de los procesos o subprocesos internos',
+  'Tabla relacional','Procedimientos','Diagramas de flujo',
+  'Instructivos','Indicadores de gestión','Informes de gestión'
+];
+var DOCS_B = ['Matriz de riesgo','Plan de tratamiento de riesgo','Monitoreo'];
+
+/* ── Firebase ── */
+var fbApp = null, db = null;
+
+/* Config embebida del proyecto "cheklist-procesos" */
+var FB_CONFIG_EMBEDDED = {
+  apiKey:            "AIzaSyBfnQsXjHHOHYq54WegvUEOvxsXtUwRroI",
+  authDomain:        "cheklist-procesos.firebaseapp.com",
+  projectId:         "cheklist-procesos",
+  storageBucket:     "cheklist-procesos.firebasestorage.app",
+  messagingSenderId: "334798830146",
+  appId:             "1:334798830146:web:f2fd731463ded64aa00bdb"
+};
+
+function getStoredFbConfig() {
+  /* Primero usa el config embebido; si no, busca en localStorage */
+  if (FB_CONFIG_EMBEDDED && FB_CONFIG_EMBEDDED.apiKey) return FB_CONFIG_EMBEDDED;
+  try { var c = JSON.parse(localStorage.getItem(KEY_FB)); return (c && c.apiKey) ? c : null; } catch(_) { return null; }
+}
+
+function initFb(cfg) {
+  try {
+    if (firebase.apps.length) firebase.apps.forEach(function(a){ try{a.delete();}catch(_){} });
+    fbApp = firebase.initializeApp(cfg);
+    db = firebase.firestore();
+    return true;
+  } catch(e) { console.error(e); db = null; return false; }
+}
+
+function fbReady() { return db !== null; }
+
+/* ── Unidades ── */
+function getUnits() {
+  try { var u = JSON.parse(localStorage.getItem(KEY_UNITS)); return Array.isArray(u) ? u : DEFAULT_UNITS.slice(); } catch(_) { return DEFAULT_UNITS.slice(); }
+}
+function saveUnitsStore(arr) {
+  try { localStorage.setItem(KEY_UNITS, JSON.stringify(arr)); } catch(_) {}
+}
+function renderSelectUnidad() {
+  var sel = document.getElementById('f-unidad');
+  var cur = sel.value;
+  sel.innerHTML = '<option value="">— Seleccione una unidad —</option>';
+  getUnits().forEach(function(u) {
+    var o = document.createElement('option');
+    o.value = u; o.textContent = u;
+    if (u === cur) o.selected = true;
+    sel.appendChild(o);
+  });
+  /* Sync hist selector */
+  var hs = document.getElementById('hist-unit-sel');
+  if (hs) {
+    var hcur = hs.value;
+    hs.innerHTML = '<option value="">— Todas las unidades —</option>';
+    getUnits().forEach(function(u) {
+      var o = document.createElement('option');
+      o.value = u; o.textContent = u;
+      if (u === hcur) o.selected = true;
+      hs.appendChild(o);
+    });
+  }
+}
+
+/* ── Tabla ── */
+function makeRow(rowNum, gid, text) {
+  var tr = document.createElement('tr');
+  tr.id = 'row-' + gid;
+  var tdN = document.createElement('td'); tdN.className = 'td-n'; tdN.textContent = rowNum;
+  var tdD = document.createElement('td'); tdD.textContent = text;
+  function mkRCell(val, colCls, lbl) {
+    var td = document.createElement('td'); td.className = 'td-r ' + colCls;
+    var lab = document.createElement('label');
+    var inp = document.createElement('input');
+    inp.type = 'radio'; inp.className = 'chk chk-' + val;
+    inp.name = 'g' + gid; inp.value = val; inp.dataset.id = gid;
+    inp.setAttribute('aria-label', lbl + ' — ' + text);
+    inp.addEventListener('change', onCheck);
+    lab.appendChild(inp); td.appendChild(lab); return td;
+  }
+  var tdO = document.createElement('td'); tdO.className = 'td-ob';
+  var ta = document.createElement('textarea');
+  ta.className = 'obs'; ta.rows = 1; ta.placeholder = 'Observaciones…';
+  ta.dataset.id = gid; ta.setAttribute('aria-label', 'Observaciones para ' + text);
+  ta.addEventListener('input', save);
+  tdO.appendChild(ta);
+  tr.appendChild(tdN); tr.appendChild(tdD);
+  tr.appendChild(mkRCell('si',   'td-col-si',   'Sí'));
+  tr.appendChild(mkRCell('no',   'td-col-no',   'No'));
+  tr.appendChild(mkRCell('proc', 'td-col-proc', 'En Proceso'));
+  tr.appendChild(tdO);
+  return tr;
+}
+function buildTables() {
+  var tA = document.getElementById('tbody-a'), tB = document.getElementById('tbody-b');
+  DOCS_A.forEach(function(d,i){ tA.appendChild(makeRow(i+1, i+1, d)); });
+  DOCS_B.forEach(function(d,i){ var g=DOCS_A.length+i+1; tB.appendChild(makeRow(g,g,d)); });
+}
+
+/* ── Estado de fila ── */
+function setRowState(id, state) {
+  var tr = document.getElementById('row-' + id); if (!tr) return;
+  tr.classList.remove('s-si','s-no','s-proc');
+  if (state==='si') tr.classList.add('s-si');
+  else if (state==='no') tr.classList.add('s-no');
+  else if (state==='proc') tr.classList.add('s-proc');
+}
+
+/* ── Recalcular ── */
+function recalc() {
+  var si=0, no=0, proc=0, sin=0;
+  for (var i=1; i<=TOTAL; i++) {
+    var c = document.querySelector('input[name="g'+i+'"]:checked');
+    if (!c) { sin++; continue; }
+    if (c.value==='si') si++;
+    else if (c.value==='no') no++;
+    else proc++;
+  }
+  var puntos = si*1 + proc*0.5;
+  var pct    = (puntos/TOTAL)*100;
+  var txt = (si===TOTAL) ? '100%' : (function(){ var r=Math.round(pct*10)/10; return (r%1===0)?r+'%':r.toFixed(1)+'%'; })();
+  document.getElementById('pct').textContent = txt;
+  document.getElementById('formula-bar').textContent =
+    '('+si+' × 1 + '+proc+' × 0,5) / 20 = '+puntos.toFixed(1).replace('.',',')+' puntos';
+  var elP = document.getElementById('pct');
+  elP.classList.remove('c-rojo','c-amar','c-verde');
+  ['luz-r','luz-a','luz-v'].forEach(function(x){ document.getElementById(x).classList.remove('on'); });
+  var sem;
+  if (si===TOTAL) { elP.classList.add('c-verde'); document.getElementById('luz-v').classList.add('on'); sem='¡Archivador completo!'; }
+  else if (pct>=60){ elP.classList.add('c-amar');  document.getElementById('luz-a').classList.add('on'); sem='En progreso'; }
+  else             { elP.classList.add('c-rojo');  document.getElementById('luz-r').classList.add('on'); sem=pct===0?'Sin avance':'Inicio'; }
+  document.getElementById('sem-txt').textContent = sem;
+  document.getElementById('r-si').textContent  = si;
+  document.getElementById('r-no').textContent  = no;
+  document.getElementById('r-proc').textContent= proc;
+  document.getElementById('r-sin').textContent = sin;
+  return { si:si, no:no, proc:proc, sin:sin, puntos:puntos, pct:pct, txt:txt };
+}
+
+function onCheck(e) { setRowState(e.target.dataset.id, e.target.value); recalc(); save(); }
+
+/* ── Label unidad ── */
+function setUnitLabel(val) {
+  var v = (val||'').trim();
+  document.getElementById('hdr-unidad').textContent  = v || '(SELECCIONE UNA UNIDAD)';
+  document.getElementById('secb-unidad').textContent = v || '(Nombre Unidad)';
+}
+
+/* ── localStorage ── */
+function save() {
+  var rows={};
+  for(var i=1;i<=TOTAL;i++){
+    var c=document.querySelector('input[name="g'+i+'"]:checked');
+    var ta=document.querySelector('.obs[data-id="'+i+'"]');
+    rows[i]={state:c?c.value:'',obs:ta?ta.value:''};
+  }
+  var d={unidad:document.getElementById('f-unidad').value,fecha:document.getElementById('f-fecha').value,revisor:document.getElementById('f-revisor').value,rows:rows};
+  try { localStorage.setItem(KEY_DATA, JSON.stringify(d)); } catch(_){}
+}
+function load() {
+  var raw; try { raw=JSON.parse(localStorage.getItem(KEY_DATA)); } catch(_){}
+  if (!raw) return;
+  if (raw.unidad){ document.getElementById('f-unidad').value=raw.unidad; setUnitLabel(raw.unidad); }
+  if (raw.fecha)  document.getElementById('f-fecha').value=raw.fecha;
+  if (raw.revisor)document.getElementById('f-revisor').value=raw.revisor;
+  if (raw.rows) Object.keys(raw.rows).forEach(function(id){
+    var row=raw.rows[id];
+    if (row.state){ var r=document.querySelector('input[name="g'+id+'"][value="'+row.state+'"]'); if(r){r.checked=true;setRowState(id,row.state);}}
+    if (row.obs){ var ta=document.querySelector('.obs[data-id="'+id+'"]'); if(ta)ta.value=row.obs;}
+  });
+}
+
+/* ── Save status helper ── */
+function setSaveStatus(type, msg, info) {
+  var el=document.getElementById('save-status'), ei=document.getElementById('save-info');
+  el.className='save-status '+type; el.textContent=msg;
+  if(ei) ei.textContent=info||'';
+}
+
+/* ══════════════════════════════════════════
+   FIREBASE — GUARDAR
+══════════════════════════════════════════ */
+window.guardarFirebase = function() {
+  if (!fbReady()) { openFbModal(); return; }
+  var unidad  = document.getElementById('f-unidad').value;
+  var fecha   = document.getElementById('f-fecha').value;
+  var revisor = document.getElementById('f-revisor').value;
+  if (!unidad) { alert('Seleccione una unidad antes de guardar.'); return; }
+  setSaveStatus('saving','⏳ Guardando…','');
+  var stats = recalc();
+  var rows={};
+  for(var i=1;i<=TOTAL;i++){
+    var c=document.querySelector('input[name="g'+i+'"]:checked');
+    var ta=document.querySelector('.obs[data-id="'+i+'"]');
+    rows[i]={estado:c?c.value:'',obs:ta?ta.value:''};
+  }
+  var doc = {
+    unidad:unidad, fecha:fecha, revisor:revisor,
+    porcentaje:Math.round(stats.pct*10)/10,
+    cSi:stats.si, cNo:stats.no, cProc:stats.proc, cSin:stats.sin,
+    rows:rows,
+    fechaGuardado: firebase.firestore.FieldValue.serverTimestamp(),
+    version:2
+  };
+  db.collection(COL).add(doc)
+    .then(function(ref){
+      var ts = new Date().toLocaleString('es-CL');
+      setSaveStatus('ok','✓ Guardado', 'ID: '+ref.id.slice(0,8)+'…  —  '+ts);
+    })
+    .catch(function(e){
+      setSaveStatus('err','⚠ Error al guardar', e.message);
+    });
+};
+
+/* ══════════════════════════════════════════
+   FIREBASE — HISTORIAL
+══════════════════════════════════════════ */
+window.loadHistory = function() {
+  if (!fbReady()) { closeHistModal(); openFbModal(); return; }
+  var el = document.getElementById('hist-list');
+  el.innerHTML = '<div class="hist-loading">&#8987; Cargando…</div>';
+  var unitFilt = document.getElementById('hist-unit-sel').value;
+  var q = db.collection(COL).orderBy('fechaGuardado','desc').limit(30);
+  if (unitFilt) q = q.where('unidad','==',unitFilt);
+  q.get().then(function(snap){
+    if (snap.empty) { el.innerHTML='<div class="hist-empty">No hay checklists guardados.</div>'; return; }
+    el.innerHTML='';
+    snap.forEach(function(doc){
+      var d=doc.data();
+      var pct=d.porcentaje||0;
+      var pcls = pct>=100?'c-verde':(pct>=60?'c-amar':'c-rojo');
+      var ts='';
+      if(d.fechaGuardado&&d.fechaGuardado.toDate) ts=d.fechaGuardado.toDate().toLocaleString('es-CL');
+      var item=document.createElement('div'); item.className='hist-item';
+      item.innerHTML='<div class="hist-info"><div class="hist-unidad">'+esc(d.unidad||'')+'</div>'+
+        '<div class="hist-meta">&#128197; '+esc(d.fecha||'')+'  |  &#128100; '+esc(d.revisor||'')+'  |  &#128337; '+ts+'</div></div>'+
+        '<div class="hist-pct '+pcls+'">'+pct+'%</div>';
+      var btnL=document.createElement('button'); btnL.className='btn-hist-load'; btnL.textContent='Cargar';
+      btnL.addEventListener('click', function(){ cargarChecklist(doc.id, d); });
+      var btnD=document.createElement('button'); btnD.className='btn-hist-del'; btnD.textContent='🗑';
+      btnD.title='Eliminar registro';
+      btnD.addEventListener('click', function(){ eliminarHistorial(doc.id, item); });
+      item.appendChild(btnL); item.appendChild(btnD);
+      el.appendChild(item);
+    });
+  }).catch(function(e){
+    el.innerHTML='<div class="hist-empty">Error: '+esc(e.message)+'</div>';
+  });
+};
+
+function cargarChecklist(docId, d) {
+  if (!confirm('¿Cargar este checklist?\nSe sobrescribirá el contenido actual.\n\n'+d.unidad+' — '+d.fecha)) return;
+  closeHistModal();
+  /* Limpiar */
+  document.querySelectorAll('input[type="radio"]').forEach(function(r){r.checked=false;});
+  document.querySelectorAll('.obs').forEach(function(t){t.value='';});
+  for(var i=1;i<=TOTAL;i++) setRowState(i,'');
+  /* Cargar campos */
+  document.getElementById('f-unidad').value  = d.unidad||'';
+  document.getElementById('f-fecha').value   = d.fecha||'';
+  document.getElementById('f-revisor').value = d.revisor||'';
+  setUnitLabel(d.unidad||'');
+  /* Cargar filas */
+  if(d.rows) Object.keys(d.rows).forEach(function(id){
+    var row=d.rows[id];
+    var est=row.estado||row.state||'';
+    if(est){ var r=document.querySelector('input[name="g'+id+'"][value="'+est+'"]'); if(r){r.checked=true;setRowState(id,est);}}
+    if(row.obs){ var ta=document.querySelector('.obs[data-id="'+id+'"]'); if(ta)ta.value=row.obs;}
+  });
+  recalc(); save();
+  setSaveStatus('ok','✓ Cargado desde Firebase','ID: '+docId.slice(0,8)+'…');
+}
+
+function eliminarHistorial(docId, itemEl) {
+  if (!confirm('¿Eliminar este registro de Firebase? Esta acción no se puede deshacer.')) return;
+  db.collection(COL).doc(docId).delete()
+    .then(function(){ if(itemEl&&itemEl.parentNode) itemEl.parentNode.removeChild(itemEl); })
+    .catch(function(e){ alert('Error al eliminar: '+e.message); });
+}
+
+/* ══════════════════════════════════════════
+   MODAL GESTIONAR UNIDADES
+══════════════════════════════════════════ */
+window.openUnitsModal = function() {
+  renderUnitsList();
+  document.getElementById('units-modal').style.display='flex';
+};
+window.closeUnitsModal = function() { document.getElementById('units-modal').style.display='none'; };
+
+function renderUnitsList() {
+  var ul=document.getElementById('units-list'); ul.innerHTML='';
+  var units=getUnits();
+  units.forEach(function(u,idx){
+    var li=document.createElement('li'); li.className='unit-item';
+    li.innerHTML='<span class="unit-num">'+(idx+1)+'</span>'+
+      '<span class="unit-name">'+esc(u)+'</span>'+
+      '<div class="unit-btns">'+
+        '<button class="btn-u btn-u-edit" data-idx="'+idx+'">✏</button>'+
+        '<button class="btn-u btn-u-del"  data-idx="'+idx+'">🗑</button>'+
+      '</div>';
+    li.querySelector('.btn-u-edit').addEventListener('click', function(){ editUnit(idx, li, u); });
+    li.querySelector('.btn-u-del').addEventListener('click',  function(){ delUnit(idx); });
+    ul.appendChild(li);
+  });
+  if (!units.length) ul.innerHTML='<li style="padding:12px;color:#888;font-size:13px">No hay unidades. Agrega una arriba.</li>';
+}
+
+function editUnit(idx, li, current) {
+  var inp=document.createElement('input'); inp.type='text'; inp.className='unit-edit-inp'; inp.value=current;
+  var nm=li.querySelector('.unit-name'); nm.replaceWith(inp); inp.focus(); inp.select();
+  var btns=li.querySelector('.unit-btns');
+  btns.innerHTML='<button class="btn-u btn-u-save">✓</button><button class="btn-u btn-u-cancel">✕</button>';
+  btns.querySelector('.btn-u-save').addEventListener('click', function(){
+    var v=inp.value.trim(); if(!v){alert('El nombre no puede estar vacío.');return;}
+    var units=getUnits(); units[idx]=v; saveUnitsStore(units); renderSelectUnidad(); renderUnitsList();
+  });
+  btns.querySelector('.btn-u-cancel').addEventListener('click', function(){ renderUnitsList(); });
+}
+
+function delUnit(idx) {
+  var units=getUnits();
+  if(!confirm('¿Eliminar la unidad "'+units[idx]+'"?')) return;
+  var cur=document.getElementById('f-unidad').value;
+  units.splice(idx,1); saveUnitsStore(units);
+  renderSelectUnidad();
+  if(cur===units[idx]) { document.getElementById('f-unidad').value=''; setUnitLabel(''); }
+  renderUnitsList();
+}
+
+window.addUnit = function() {
+  var inp=document.getElementById('new-unit-inp'); var v=inp.value.trim();
+  if(!v){alert('Escribe el nombre de la unidad.');return;}
+  var units=getUnits();
+  if(units.indexOf(v)>=0){alert('Esa unidad ya existe.');return;}
+  units.push(v); saveUnitsStore(units); renderSelectUnidad(); renderUnitsList(); inp.value=''; inp.focus();
+};
+
+/* ══════════════════════════════════════════
+   MODAL FIREBASE CONFIG
+══════════════════════════════════════════ */
+window.openFbModal = function() {
+  document.getElementById('fb-error').style.display='none';
+  document.getElementById('fb-ok').style.display='none';
+  var cfg=getStoredFbConfig();
+  if(cfg) document.getElementById('fb-config-input').value=JSON.stringify(cfg,null,2);
+  document.getElementById('fb-modal').style.display='flex';
+};
+window.closeFbModal = function() { document.getElementById('fb-modal').style.display='none'; };
+
+window.saveFbConfig = function() {
+  var raw=document.getElementById('fb-config-input').value.trim();
+  var errEl=document.getElementById('fb-error'), okEl=document.getElementById('fb-ok');
+  errEl.style.display='none'; okEl.style.display='none';
+  /* Extraer JSON si viene como const firebaseConfig = {...} */
+  var match=raw.match(/\{[\s\S]*\}/);
+  if(!match){errEl.textContent='No se encontró un objeto JSON válido.';errEl.style.display='block';return;}
+  var cfg; try { cfg=JSON.parse(match[0]); } catch(e){errEl.textContent='JSON inválido: '+e.message;errEl.style.display='block';return;}
+  if(!cfg.apiKey||!cfg.projectId){errEl.textContent='Faltan campos (apiKey, projectId).';errEl.style.display='block';return;}
+  if(!initFb(cfg)){errEl.textContent='Error al inicializar Firebase. Verifica el config.';errEl.style.display='block';return;}
+  try{localStorage.setItem(KEY_FB,JSON.stringify(cfg));}catch(_){}
+  okEl.style.display='block';
+  setTimeout(function(){ closeFbModal(); setSaveStatus('ok','✓ Firebase conectado','Proyecto: '+cfg.projectId); },1200);
+};
+
+/* ══════════════════════════════════════════
+   MODAL IMPRESIÓN
+══════════════════════════════════════════ */
+var selOrient='portrait';
+window.openPrintModal  = function() { document.getElementById('print-modal').style.display='flex'; };
+window.closePrintModal = function() { document.getElementById('print-modal').style.display='none'; };
+window.selectOrient = function(o) {
+  selOrient=o;
+  document.getElementById('card-portrait').classList.toggle('active',  o==='portrait');
+  document.getElementById('card-landscape').classList.toggle('active', o==='landscape');
+};
+window.doPrint = function() {
+  document.getElementById('sty-page').textContent='@page{size:A4 '+selOrient+';margin:13mm 12mm 16mm;}';
+  closePrintModal();
+  window.print();
+};
+
+/* beforeprint / afterprint */
+window.addEventListener('beforeprint', function() {
+  document.querySelectorAll('.campo input, .select-unidad').forEach(function(inp){
+    var span=document.createElement('span'); span.className='print-val';
+    span.textContent=inp.value||'—'; inp.insertAdjacentElement('afterend',span);
+  });
+  var u=document.getElementById('f-unidad').value||'—';
+  var now=new Date();
+  document.getElementById('pf-unidad').textContent='Unidad: '+u;
+  document.getElementById('pf-fecha-imp').textContent='Impreso: '+now.toLocaleString('es-CL');
+});
+window.addEventListener('afterprint', function() {
+  document.querySelectorAll('.print-val').forEach(function(s){s.remove();});
+});
+
+/* ══════════════════════════════════════════
+   MODAL HISTORIAL (abrir/cerrar)
+══════════════════════════════════════════ */
+window.openHistModal = function() {
+  if (!fbReady()) { openFbModal(); return; }
+  renderSelectUnidad();
+  /* Pre-seleccionar unidad actual */
+  var cu=document.getElementById('f-unidad').value;
+  if(cu) document.getElementById('hist-unit-sel').value=cu;
+  document.getElementById('hist-list').innerHTML='<div class="hist-empty">Haz clic en "Buscar" para cargar.</div>';
+  document.getElementById('hist-modal').style.display='flex';
+};
+window.closeHistModal = function() { document.getElementById('hist-modal').style.display='none'; };
+
+/* Cerrar modales al hacer clic en fondo */
+['units-modal','fb-modal','hist-modal','print-modal'].forEach(function(id){
+  var el=document.getElementById(id);
+  el.addEventListener('click',function(e){ if(e.target===this) this.style.display='none'; });
+});
+
+/* ══════════════════════════════════════════
+   EXPORT CSV
+══════════════════════════════════════════ */
+window.exportCSV = function() {
+  var unidad=document.getElementById('f-unidad').value, fecha=document.getElementById('f-fecha').value, revisor=document.getElementById('f-revisor').value;
+  function q(s){return '"'+String(s).replace(/"/g,'""')+'"';}
+  function rLine(gid,doc){
+    var c=document.querySelector('input[name="g'+gid+'"]:checked'), st=c?c.value:'';
+    var ta=document.querySelector('.obs[data-id="'+gid+'"]'), obs=ta?ta.value:'';
+    return [gid,q(doc),st==='si'?'X':'',st==='no'?'X':'',st==='proc'?'X':'',q(obs)].join(',');
+  }
+  var lines=['﻿','CHECKLIST — ARCHIVADOR DE PROCESOS Y RIESGOS','Unidad:,'+q(unidad),'Fecha:,'+q(fecha),'Revisado por:,'+q(revisor),'','N°,'+q('Documento / Contenido')+',Sí,No,En Proceso,Observaciones','SECCIÓN A,,,,,'];
+  DOCS_A.forEach(function(d,i){lines.push(rLine(i+1,d));});
+  lines.push('SECCIÓN B,,,,,');
+  DOCS_B.forEach(function(d,i){lines.push(rLine(DOCS_A.length+i+1,d));});
+  lines.push('','RESUMEN,,,,,','Total,20,,,,','Sí,'+document.getElementById('r-si').textContent+',,,,','No,'+document.getElementById('r-no').textContent+',,,,','En Proceso,'+document.getElementById('r-proc').textContent+',,,,','Sin marcar,'+document.getElementById('r-sin').textContent+',,,,','Avance,'+document.getElementById('pct').textContent+',,,,');
+  var blob=new Blob([lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
+  var url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url; a.download='Checklist_'+(unidad||'sin_nombre').replace(/\s+/g,'_')+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+};
+
+/* ══════════════════════════════════════════
+   LIMPIAR
+══════════════════════════════════════════ */
+window.limpiar = function() {
+  if(!confirm('¿Limpiar toda la checklist?\nSe borrarán marcas, observaciones y datos. Esta acción no se puede deshacer.')) return;
+  document.getElementById('f-unidad').value=''; document.getElementById('f-fecha').value=''; document.getElementById('f-revisor').value='';
+  setUnitLabel('');
+  document.querySelectorAll('input[type="radio"]').forEach(function(r){r.checked=false;});
+  document.querySelectorAll('.obs').forEach(function(t){t.value='';});
+  for(var i=1;i<=TOTAL;i++) setRowState(i,'');
+  recalc(); try{localStorage.removeItem(KEY_DATA);}catch(_){}
+  setSaveStatus('idle','💾 Sin guardar','');
+};
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+function esc(s){ var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+function init() {
+  buildTables();
+  renderSelectUnidad();
+  document.getElementById('f-unidad').addEventListener('change', function(){setUnitLabel(this.value); save();});
+  document.getElementById('f-fecha').addEventListener('change', save);
+  document.getElementById('f-revisor').addEventListener('input', save);
+  /* Tecla Enter en nueva unidad */
+  document.getElementById('new-unit-inp').addEventListener('keydown',function(e){if(e.key==='Enter')addUnit();});
+  /* Cargar localStorage */
+  load(); recalc();
+  /* Inicializar Firebase si hay config guardada */
+  var cfg=getStoredFbConfig();
+  if(cfg && initFb(cfg)) setSaveStatus('ok','✓ Firebase conectado','Proyecto: '+cfg.projectId);
+  else setSaveStatus('idle','💾 Sin guardar','Firebase no configurado — haz clic en 🔥');
+}
+
+init();
+
+}());
+</script>
+</body>
+</html>
