@@ -21,7 +21,7 @@
   --amar: #b07d00;  --amar-bg:  #fff3cd;
 }
 
-body { font-family: 'Times New Roman', Times, serif; font-size: 14px; background: #e8eef7; color: #1a1a1a; line-height: 1.5; }
+body { font-family: 'Times New Roman', Times, serif; font-size: 20px; background: #e8eef7; color: #1a1a1a; line-height: 1.5; }
 
 /* ===== LAYOUT ===== */
 .wrap { max-width: 1200px; margin: 20px auto; padding: 0 16px 48px; }
@@ -146,10 +146,10 @@ tbody tr:nth-child(odd)  { background: #fff; }
 tbody tr.s-si   td.td-col-si   { background: var(--verde-bg) !important; }
 tbody tr.s-no   td.td-col-no   { background: var(--rojo-bg)  !important; }
 tbody tr.s-proc td.td-col-proc { background: var(--amar-bg)  !important; }
-td { padding: 6px 9px; border: 1px solid #d4dcea; vertical-align: middle; font-size: 12.5px; }
-td.td-n  { text-align: center; font-weight: 700; color: var(--az2); width: 20px; padding: 4px 2px; }
-td.td-r  { text-align: center; width: 30px; padding: 4px 2px; }
-td.td-d  { font-size: 17px; }
+td { padding: 6px 5px; border: 1px solid #d4dcea; vertical-align: middle; font-size: 20px; }
+td.td-n  { text-align: center; font-weight: 700; color: var(--az2); width: 10px; padding: 4px 1px; }
+td.td-r  { text-align: center; width: 20px; padding: 4px 1px; }
+td.td-d  { font-size: 20px; }
 td.td-ob { min-width: 120px; }
 
 /* Checkboxes (radio styled) */
@@ -328,20 +328,25 @@ td.td-ob { min-width: 120px; }
   #pct { font-size: 26pt !important; }
   .formula-bar { display: none !important; }
   .semaforo { display: none !important; }
-  .sec-hdr { background: var(--az2) !important; font-size: 8.5pt !important; padding: 5px 12px !important; page-break-after: avoid; }
+  .sec-hdr { background: var(--az2) !important; font-size: 12pt !important; padding: 5px 10px !important; page-break-after: avoid; }
   .tbl-wrap { overflow: visible !important; border-radius: 0 !important; border: 1px solid #b0bccf !important; border-top: none !important; margin-bottom: 12px !important; }
-  table { min-width: auto !important; font-size: 8.5pt !important; }
-  thead th { background: #d6e4f7 !important; color: #1F3864 !important; font-size: 8pt !important; padding: 5px 7px !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-  td { padding: 4px 6px !important; font-size: 8.5pt !important; border: 1px solid #c8d0e0 !important; }
+  table { min-width: auto !important; font-size: 14pt !important; }
+  thead th { background: #d6e4f7 !important; color: #1F3864 !important; font-size: 12pt !important; padding: 5px 3px !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  thead th[style*="width:10px"] { width: 10px !important; padding: 5px 1px !important; }
+  thead th[style*="width:20px"] { width: 20px !important; padding: 5px 1px !important; }
+  td { padding: 5px 4px !important; font-size: 14pt !important; border: 1px solid #c8d0e0 !important; }
+  td.td-n  { width: 10px !important; padding: 5px 1px !important; font-size: 12pt !important; }
+  td.td-r  { width: 20px !important; padding: 5px 1px !important; }
+  td.td-d  { font-size: 14pt !important; }
   tbody tr.s-si   td.td-col-si   { background: var(--verde-bg) !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   tbody tr.s-no   td.td-col-no   { background: var(--rojo-bg)  !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   tbody tr.s-proc td.td-col-proc { background: var(--amar-bg)  !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .chk { display: none !important; }
-  td.td-col-si::before, td.td-col-no::before, td.td-col-proc::before { content: '□'; font-size: 11pt; color: #ccc; display: block; text-align: center; }
+  td.td-col-si::before, td.td-col-no::before, td.td-col-proc::before { content: '□'; font-size: 13pt; color: #ccc; display: block; text-align: center; }
   tr.s-si   td.td-col-si::before   { content: '✔'; color: #28a745 !important; font-weight: 900; }
   tr.s-no   td.td-col-no::before   { content: '✖'; color: #dc3545 !important; font-weight: 900; }
   tr.s-proc td.td-col-proc::before { content: '✔'; color: #c78b00 !important; font-weight: 900; }
-  .obs { border: none !important; resize: none !important; padding: 0 !important; font-size: 8pt !important; background: transparent !important; min-height: auto !important; }
+  .obs { border: none !important; resize: none !important; padding: 0 !important; font-size: 13pt !important; background: transparent !important; min-height: auto !important; }
   .resumen { border: 1.5px solid var(--az2) !important; padding: 8px 12px !important; margin-bottom: 8px !important; page-break-inside: avoid; }
   .chip-n { font-size: 16pt !important; }
   .leyenda { display: none !important; }
@@ -519,11 +524,11 @@ td.td-ob { min-width: 120px; }
   <div class="tbl-wrap">
     <table aria-label="Sección A">
       <thead><tr>
-        <th style="width:20px;padding:5px 2px">N°</th>
-        <th class="th-l" style="width:38%">Documento / Contenido</th>
-        <th style="width:30px;padding:5px 2px">Sí</th>
-        <th style="width:30px;padding:5px 2px">No</th>
-        <th style="width:30px;padding:5px 2px;white-space:normal;line-height:1.2;word-break:break-word">En Proceso</th>
+        <th style="width:10px;padding:5px 1px">N°</th>
+        <th class="th-l" style="width:40%">Documento / Contenido</th>
+        <th style="width:20px;padding:5px 1px">Sí</th>
+        <th style="width:20px;padding:5px 1px">No</th>
+        <th style="width:20px;padding:5px 1px;white-space:normal;line-height:1.2;word-break:break-word">En Proceso</th>
         <th style="width:30%">Observaciones</th>
       </tr></thead>
       <tbody id="tbody-a"></tbody>
@@ -535,11 +540,11 @@ td.td-ob { min-width: 120px; }
   <div class="tbl-wrap">
     <table aria-label="Sección B">
       <thead><tr>
-        <th style="width:20px;padding:5px 2px">N°</th>
-        <th class="th-l" style="width:38%">Documento / Contenido</th>
-        <th style="width:30px;padding:5px 2px">Sí</th>
-        <th style="width:30px;padding:5px 2px">No</th>
-        <th style="width:30px;padding:5px 2px;white-space:normal;line-height:1.2;word-break:break-word">En Proceso</th>
+        <th style="width:10px;padding:5px 1px">N°</th>
+        <th class="th-l" style="width:40%">Documento / Contenido</th>
+        <th style="width:20px;padding:5px 1px">Sí</th>
+        <th style="width:20px;padding:5px 1px">No</th>
+        <th style="width:20px;padding:5px 1px;white-space:normal;line-height:1.2;word-break:break-word">En Proceso</th>
         <th style="width:30%">Observaciones</th>
       </tr></thead>
       <tbody id="tbody-b"></tbody>
@@ -1249,8 +1254,8 @@ window.exportCSV = function() {
     ' xmlns:html="http://www.w3.org/TR/REC-html40">\n'+
     sty+'\n'+
     '<Worksheet ss:Name="Checklist"><Table>\n'+
-    '<Column ss:Width="20"/><Column ss:Width="300"/><Column ss:Width="26"/>'+
-    '<Column ss:Width="26"/><Column ss:Width="26"/><Column ss:Width="265"/>\n'+
+    '<Column ss:Width="18"/><Column ss:Width="310"/><Column ss:Width="22"/>'+
+    '<Column ss:Width="22"/><Column ss:Width="22"/><Column ss:Width="265"/>\n'+
     rows+
     '</Table></Worksheet></Workbook>';
 
