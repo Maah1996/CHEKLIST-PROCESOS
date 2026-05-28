@@ -908,38 +908,70 @@ window.guardarFirebase = function() {
 window.loadHistory = function() {
   if (!fbReady()) { closeHistModal(); openFbModal(); return; }
   var el = document.getElementById('hist-list');
-  el.innerHTML = '<div class="hist-loading">&#8987; Cargando…</div>';
-  var unitFilt = document.getElementById('hist-unit-sel').value;
-  var q = db.collection(COL).orderBy('fechaGuardado','desc').limit(30);
-  if (unitFilt) q = q.where('unidad','==',unitFilt);
-  q.get().then(function(snap){
-    if (snap.empty) { el.innerHTML='<div class="hist-empty">No hay checklists guardados.</div>'; return; }
-    el.innerHTML='';
-    snap.forEach(function(doc){
-      var d=doc.data();
-      var pct=d.porcentaje||0;
-      var pcls = pct>=100?'c-verde':(pct>=60?'c-amar':'c-rojo');
-      var ts='';
-      if(d.fechaGuardado&&d.fechaGuardado.toDate) ts=d.fechaGuardado.toDate().toLocaleString('es-CL');
-      var item=document.createElement('div'); item.className='hist-item';
-      item.innerHTML='<div class="hist-info"><div class="hist-unidad">'+esc(d.unidad||'')+'</div>'+
-        '<div class="hist-meta">&#128197; '+esc(d.fecha||'')+'  |  &#128100; '+esc(d.revisor||'')+'  |  &#128337; '+ts+'</div></div>'+
-        '<div class="hist-pct '+pcls+'">'+pct+'%</div>';
-      var btnL=document.createElement('button'); btnL.className='btn-hist-load'; btnL.textContent='Cargar';
-      btnL.addEventListener('click', function(){ cargarChecklist(doc.id, d); });
-      item.appendChild(btnL);
-      /* Botón eliminar solo para admin */
-      var sess; try{sess=JSON.parse(localStorage.getItem(KEY_AUTH));}catch(_){}
-      if (sess && sess.role==='admin') {
-        var btnD=document.createElement('button'); btnD.className='btn-hist-del'; btnD.textContent='🗑';
-        btnD.title='Eliminar registro';
-        btnD.addEventListener('click', function(){ eliminarHistorial(doc.id, item); });
-        item.appendChild(btnD);
-      }
-      el.appendChild(item);
+  el.innerHTML = '<div class="hist-loading">&#8987; Cargando&#8230;</div>';
+  var unitFilt = (document.getElementById('hist-unit-sel').value || '').trim();
+
+  /* ⚠ where() DEBE ir antes de orderBy() para que Firestore aplique el filtro */
+  var q;
+  if (unitFilt) {
+    q = db.collection(COL)
+          .where('unidad', '==', unitFilt)
+          .orderBy('fechaGuardado', 'desc')
+          .limit(50);
+  } else {
+    q = db.collection(COL)
+          .orderBy('fechaGuardado', 'desc')
+          .limit(50);
+  }
+
+  q.get().then(function(snap) {
+    if (snap.empty) {
+      el.innerHTML = '<div class="hist-empty">No hay checklists guardados'
+        + (unitFilt ? ' para <strong>'+esc(unitFilt)+'</strong>' : '') + '.</div>';
+      return;
+    }
+    el.innerHTML = '';
+    var sess; try { sess = JSON.parse(localStorage.getItem(KEY_AUTH)); } catch(_) {}
+
+    snap.forEach(function(snapDoc) {
+      /* IIFE garantiza que cada botón capture su propio docId/datos */
+      (function(docId, d) {
+        var pct  = d.porcentaje || 0;
+        var pcls = pct >= 100 ? 'c-verde' : (pct >= 60 ? 'c-amar' : 'c-rojo');
+        var ts   = '';
+        if (d.fechaGuardado && d.fechaGuardado.toDate)
+          ts = d.fechaGuardado.toDate().toLocaleString('es-CL');
+
+        var item = document.createElement('div'); item.className = 'hist-item';
+        item.innerHTML =
+          '<div class="hist-info">' +
+            '<div class="hist-unidad">' + esc(d.unidad||'') + '</div>' +
+            '<div class="hist-meta">&#128197; ' + esc(d.fecha||'') +
+              '&nbsp;&nbsp;|&nbsp;&nbsp;&#128100; ' + esc(d.revisor||'') +
+              '&nbsp;&nbsp;|&nbsp;&nbsp;&#128337; ' + ts + '</div>' +
+          '</div>' +
+          '<div class="hist-pct ' + pcls + '">' + pct + '%</div>';
+
+        var btnL = document.createElement('button');
+        btnL.className = 'btn-hist-load'; btnL.textContent = 'Cargar';
+        btnL.addEventListener('click', function() { cargarChecklist(docId, d); });
+        item.appendChild(btnL);
+
+        /* Eliminar solo admin */
+        if (sess && sess.role === 'admin') {
+          var btnD = document.createElement('button');
+          btnD.className = 'btn-hist-del'; btnD.textContent = '&#128465;';
+          btnD.title = 'Eliminar: ' + (d.unidad||'') + ' — ' + (d.fecha||'');
+          btnD.addEventListener('click', function() {
+            eliminarHistorial(docId, item, d.unidad||'', d.fecha||'');
+          });
+          item.appendChild(btnD);
+        }
+        el.appendChild(item);
+      })(snapDoc.id, snapDoc.data());
     });
-  }).catch(function(e){
-    el.innerHTML='<div class="hist-empty">Error: '+esc(e.message)+'</div>';
+  }).catch(function(e) {
+    el.innerHTML = '<div class="hist-empty">Error: ' + esc(e.message) + '</div>';
   });
 };
 
@@ -966,11 +998,16 @@ function cargarChecklist(docId, d) {
   setSaveStatus('ok','✓ Cargado desde Firebase','ID: '+docId.slice(0,8)+'…');
 }
 
-function eliminarHistorial(docId, itemEl) {
-  if (!confirm('¿Eliminar este registro de Firebase? Esta acción no se puede deshacer.')) return;
+function eliminarHistorial(docId, itemEl, unidad, fecha) {
+  if (!confirm(
+    '¿Eliminar este registro?\n\n' +
+    'Unidad: ' + unidad + '\n' +
+    'Fecha:  ' + fecha  + '\n\n' +
+    'Esta acción no se puede deshacer.'
+  )) return;
   db.collection(COL).doc(docId).delete()
-    .then(function(){ if(itemEl&&itemEl.parentNode) itemEl.parentNode.removeChild(itemEl); })
-    .catch(function(e){ alert('Error al eliminar: '+e.message); });
+    .then(function() { if (itemEl && itemEl.parentNode) itemEl.parentNode.removeChild(itemEl); })
+    .catch(function(e) { alert('Error al eliminar: ' + e.message); });
 }
 
 /* ══════════════════════════════════════════
