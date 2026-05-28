@@ -292,10 +292,12 @@ td.td-ob { min-width: 160px; }
   .wrap { margin: 0 !important; padding: 0 !important; max-width: 100% !important; }
   .modal-overlay, .btns, .save-bar, .screen-only { display: none !important; }
   .print-only { display: block !important; }
-  .hdr { border-radius: 0 !important; background: var(--az1) !important; padding: 12px 16px 10px !important; }
-  .hdr h1 { font-size: 20pt !important; }
-  .hdr-sub2 { font-size: 9pt !important; }
-  .hdr-sub  { font-size: 10pt !important; }
+  .hdr { border-radius: 0 !important; background: #e8eef7 !important; padding: 12px 16px 10px !important; border: 1px solid #b0bccf !important; }
+  .hdr h1 { font-size: 20pt !important; color: #1F3864 !important; }
+  .hdr-sub2 { font-size: 9pt !important; color: #4a6a9a !important; }
+  .hdr-sub  { font-size: 10pt !important; color: #2E5496 !important; }
+  .hdr-unidad { color: #1F3864 !important; }
+  .btn-gear { display: none !important; }
   .id-bar { display: grid !important; grid-template-columns: 2fr 1fr 1fr !important; padding: 8px 16px !important; border-top: 1px solid #c8d4e8 !important; }
   .campo label { font-size: 7.5pt !important; }
   .select-unidad, .campo input { display: none !important; }
@@ -308,7 +310,7 @@ td.td-ob { min-width: 160px; }
   .sec-hdr { background: var(--az2) !important; font-size: 8.5pt !important; padding: 5px 12px !important; page-break-after: avoid; }
   .tbl-wrap { overflow: visible !important; border-radius: 0 !important; border: 1px solid #b0bccf !important; border-top: none !important; margin-bottom: 12px !important; }
   table { min-width: auto !important; font-size: 8.5pt !important; }
-  thead th { background: var(--az1) !important; font-size: 8pt !important; padding: 5px 7px !important; }
+  thead th { background: #d6e4f7 !important; color: #1F3864 !important; font-size: 8pt !important; padding: 5px 7px !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   td { padding: 4px 6px !important; font-size: 8.5pt !important; border: 1px solid #c8d0e0 !important; }
   tbody tr.s-si   td.td-col-si   { background: var(--verde-bg) !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   tbody tr.s-no   td.td-col-no   { background: var(--rojo-bg)  !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
@@ -976,6 +978,8 @@ window.doPrint = function() {
 
 /* beforeprint / afterprint */
 window.addEventListener('beforeprint', function() {
+  document._origTitle = document.title;
+  document.title = ' ';
   document.querySelectorAll('.campo input, .select-unidad').forEach(function(inp){
     var span=document.createElement('span'); span.className='print-val';
     span.textContent=inp.value||'—'; inp.insertAdjacentElement('afterend',span);
@@ -987,6 +991,7 @@ window.addEventListener('beforeprint', function() {
 });
 window.addEventListener('afterprint', function() {
   document.querySelectorAll('.print-val').forEach(function(s){s.remove();});
+  document.title = document._origTitle || 'Checklist — Archivador de Procesos y Riesgos';
 });
 
 /* ══════════════════════════════════════════
