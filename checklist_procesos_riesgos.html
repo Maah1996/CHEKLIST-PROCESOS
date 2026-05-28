@@ -160,7 +160,7 @@ td.td-ob { min-width: 120px; }
 .chk-no:checked   { background: #dc3545; border-color: #dc3545; }
 .chk-proc:checked { background: #c78b00; border-color: #c78b00; }
 
-.obs { width: 100%; min-height: 28px; border: 1px solid #cdd6e8; border-radius: 4px; padding: 3px 7px; font-family: inherit; font-size: 12px; resize: vertical; }
+.obs { width: 100%; min-height: 28px; border: 1px solid #cdd6e8; border-radius: 4px; padding: 3px 7px; font-family: inherit; font-size: 12px; resize: none; overflow: hidden; box-sizing: border-box; }
 .obs:focus { outline: none; border-color: var(--az2); }
 
 /* ===== RESUMEN ===== */
@@ -772,7 +772,7 @@ function makeRow(rowNum, gid, text) {
   var ta = document.createElement('textarea');
   ta.className = 'obs'; ta.rows = 1; ta.placeholder = 'Observaciones…';
   ta.dataset.id = gid; ta.setAttribute('aria-label', 'Observaciones para ' + text);
-  ta.addEventListener('input', save);
+  ta.addEventListener('input', function(){ autoResize(this); save(); });
   tdO.appendChild(ta);
   tr.appendChild(tdN); tr.appendChild(tdD);
   tr.appendChild(mkRCell('si',   'td-col-si',   'Sí'));
@@ -962,7 +962,7 @@ function cargarChecklist(docId, d) {
     if(est){ var r=document.querySelector('input[name="g'+id+'"][value="'+est+'"]'); if(r){r.checked=true;setRowState(id,est);}}
     if(row.obs){ var ta=document.querySelector('.obs[data-id="'+id+'"]'); if(ta)ta.value=row.obs;}
   });
-  recalc(); save();
+  recalc(); save(); autoResizeAll();
   setSaveStatus('ok','✓ Cargado desde Firebase','ID: '+docId.slice(0,8)+'…');
 }
 
@@ -1514,6 +1514,15 @@ window.limpiar = function() {
 ══════════════════════════════════════════ */
 function esc(s){ var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 
+/* Auto-resize textareas */
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+function autoResizeAll() {
+  document.querySelectorAll('.obs').forEach(function(ta){ autoResize(ta); });
+}
+
 function init() {
   buildTables();
   renderSelectUnidad();
@@ -1524,7 +1533,7 @@ function init() {
   /* Enter en formulario de login */
   document.getElementById('login-user').addEventListener('keydown',function(e){if(e.key==='Enter') document.getElementById('login-pass').focus();});
   document.getElementById('login-pass').addEventListener('keydown',function(e){if(e.key==='Enter') doLogin();});
-  load(); recalc();
+  load(); recalc(); autoResizeAll();
   var cfg=getStoredFbConfig();
   if(cfg && initFb(cfg)) {
     setSaveStatus('ok','✓ Firebase conectado','Proyecto: '+cfg.projectId);
