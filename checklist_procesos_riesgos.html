@@ -1013,21 +1013,90 @@ window.closeHistModal = function() { document.getElementById('hist-modal').style
    EXPORT CSV
 ══════════════════════════════════════════ */
 window.exportCSV = function() {
-  var unidad=document.getElementById('f-unidad').value, fecha=document.getElementById('f-fecha').value, revisor=document.getElementById('f-revisor').value;
-  function q(s){return '"'+String(s).replace(/"/g,'""')+'"';}
-  function rLine(gid,doc){
-    var c=document.querySelector('input[name="g'+gid+'"]:checked'), st=c?c.value:'';
-    var ta=document.querySelector('.obs[data-id="'+gid+'"]'), obs=ta?ta.value:'';
-    return [gid,q(doc),st==='si'?'X':'',st==='no'?'X':'',st==='proc'?'X':'',q(obs)].join(',');
+  var unidad  = document.getElementById('f-unidad').value;
+  var fecha   = document.getElementById('f-fecha').value;
+  var revisor = document.getElementById('f-revisor').value;
+  var pct  = document.getElementById('pct').textContent;
+  var rsi  = document.getElementById('r-si').textContent;
+  var rno  = document.getElementById('r-no').textContent;
+  var rproc= document.getElementById('r-proc').textContent;
+  var rsin = document.getElementById('r-sin').textContent;
+
+  function xe(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function rowHtml(gid, doc) {
+    var c   = document.querySelector('input[name="g'+gid+'"]:checked');
+    var st  = c ? c.value : '';
+    var ta  = document.querySelector('.obs[data-id="'+gid+'"]');
+    var obs = ta ? ta.value : '';
+    var si   = st==='si'   ? '&#10004;' : '';
+    var no   = st==='no'   ? '&#10008;' : '';
+    var proc = st==='proc' ? '&#9685;'  : '';
+    var bg   = st==='si'   ? '#d4edda'
+             : st==='no'   ? '#f8d7da'
+             : st==='proc' ? '#fff3cd' : '#ffffff';
+    return '<tr style="background:'+bg+'">'+
+      '<td style="text-align:center;width:40px">'+gid+'</td>'+
+      '<td>'+xe(doc)+'</td>'+
+      '<td style="text-align:center;width:45px;font-size:14pt;color:#1e7e34">'+si+'</td>'+
+      '<td style="text-align:center;width:45px;font-size:14pt;color:#c82333">'+no+'</td>'+
+      '<td style="text-align:center;width:70px;font-size:14pt;color:#b07d00">'+proc+'</td>'+
+      '<td>'+xe(obs)+'</td>'+
+    '</tr>';
   }
-  var lines=['﻿','CHECKLIST — ARCHIVADOR DE PROCESOS Y RIESGOS','Unidad:,'+q(unidad),'Fecha:,'+q(fecha),'Revisado por:,'+q(revisor),'','N°,'+q('Documento / Contenido')+',Sí,No,En Proceso,Observaciones','SECCIÓN A,,,,,'];
-  DOCS_A.forEach(function(d,i){lines.push(rLine(i+1,d));});
-  lines.push('SECCIÓN B,,,,,');
-  DOCS_B.forEach(function(d,i){lines.push(rLine(DOCS_A.length+i+1,d));});
-  lines.push('','RESUMEN,,,,,','Total,20,,,,','Sí,'+document.getElementById('r-si').textContent+',,,,','No,'+document.getElementById('r-no').textContent+',,,,','En Proceso,'+document.getElementById('r-proc').textContent+',,,,','Sin marcar,'+document.getElementById('r-sin').textContent+',,,,','Avance,'+document.getElementById('pct').textContent+',,,,');
-  var blob=new Blob([lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
-  var url=URL.createObjectURL(blob), a=document.createElement('a');
-  a.href=url; a.download='Checklist_'+(unidad||'sin_nombre').replace(/\s+/g,'_')+'.csv';
+
+  var secStyle = 'background:#2E5496;color:#fff;font-weight:bold;padding:6px 8px;';
+  var thStyle  = 'background:#1F3864;color:#fff;font-weight:bold;text-align:center;padding:6px 8px;border:1px solid #aaa;';
+  var tdMeta   = 'padding:5px 8px;border:1px solid #ddd;';
+
+  var html = ''+
+  '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">'+
+  '<head><meta charset="UTF-8">'+
+  '<style>'+
+  'body{font-family:Arial,sans-serif;font-size:10pt;}'+
+  'table{border-collapse:collapse;width:100%;}'+
+  'td,th{border:1px solid #bbb;padding:4px 7px;vertical-align:middle;}'+
+  '</style></head><body>'+
+  '<table>'+
+  '<tr><td colspan="6" style="background:#1F3864;color:#fff;font-size:15pt;font-weight:900;'+
+      'text-align:center;padding:12px;letter-spacing:1px;border:1px solid #1F3864">'+
+      'CHECKLIST — ARCHIVADOR DE PROCESOS Y RIESGOS</td></tr>'+
+  '<tr>'+
+    '<td colspan="2" style="'+tdMeta+'"><b>Unidad:</b> '+xe(unidad)+'</td>'+
+    '<td colspan="2" style="'+tdMeta+'"><b>Fecha:</b> '+xe(fecha)+'</td>'+
+    '<td colspan="2" style="'+tdMeta+'"><b>Revisado por:</b> '+xe(revisor)+'</td>'+
+  '</tr>'+
+  '<tr>'+
+    '<th style="'+thStyle+'">N°</th>'+
+    '<th style="'+thStyle+'">Documento / Contenido</th>'+
+    '<th style="'+thStyle+'">&#10004; Sí</th>'+
+    '<th style="'+thStyle+'">&#10008; No</th>'+
+    '<th style="'+thStyle+'">&#9685; En Proceso</th>'+
+    '<th style="'+thStyle+'">Observaciones</th>'+
+  '</tr>'+
+  '<tr><td colspan="6" style="'+secStyle+'">SECCIÓN A</td></tr>';
+
+  DOCS_A.forEach(function(d,i){ html += rowHtml(i+1, d); });
+  html += '<tr><td colspan="6" style="'+secStyle+'">SECCIÓN B</td></tr>';
+  DOCS_B.forEach(function(d,i){ html += rowHtml(DOCS_A.length+i+1, d); });
+
+  html +=
+  '</table><br>'+
+  '<table style="width:260px">'+
+  '<tr><td colspan="2" style="background:#1F3864;color:#fff;font-weight:bold;text-align:center;padding:6px;border:1px solid #1F3864">RESUMEN</td></tr>'+
+  '<tr><td style="'+tdMeta+'">Total documentos</td><td style="text-align:center;'+tdMeta+'">20</td></tr>'+
+  '<tr style="background:#d4edda"><td style="'+tdMeta+'">&#10004; Sí</td><td style="text-align:center;'+tdMeta+'"><b>'+rsi+'</b></td></tr>'+
+  '<tr style="background:#f8d7da"><td style="'+tdMeta+'">&#10008; No</td><td style="text-align:center;'+tdMeta+'"><b>'+rno+'</b></td></tr>'+
+  '<tr style="background:#fff3cd"><td style="'+tdMeta+'">&#9685; En Proceso</td><td style="text-align:center;'+tdMeta+'"><b>'+rproc+'</b></td></tr>'+
+  '<tr><td style="'+tdMeta+'">Sin marcar</td><td style="text-align:center;'+tdMeta+'"><b>'+rsin+'</b></td></tr>'+
+  '<tr><td style="font-weight:bold;'+tdMeta+'">Avance</td><td style="font-weight:bold;text-align:center;font-size:13pt;'+tdMeta+'">'+pct+'%</td></tr>'+
+  '</table>'+
+  '</body></html>';
+
+  var blob = new Blob([html], {type:'application/vnd.ms-excel;charset=utf-8'});
+  var url  = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url;
+  a.download = 'Checklist_'+(unidad||'sin_nombre').replace(/\s+/g,'_')+'.xls';
   document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
 };
 
