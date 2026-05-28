@@ -21,7 +21,7 @@
   --amar: #b07d00;  --amar-bg:  #fff3cd;
 }
 
-body { font-family: Arial, Helvetica, sans-serif; font-size: 14px; background: #e8eef7; color: #1a1a1a; line-height: 1.5; }
+body { font-family: 'Times New Roman', Times, serif; font-size: 14px; background: #e8eef7; color: #1a1a1a; line-height: 1.5; }
 
 /* ===== LAYOUT ===== */
 .wrap { max-width: 1200px; margin: 20px auto; padding: 0 16px 48px; }
@@ -148,7 +148,8 @@ tbody tr.s-no   td.td-col-no   { background: var(--rojo-bg)  !important; }
 tbody tr.s-proc td.td-col-proc { background: var(--amar-bg)  !important; }
 td { padding: 6px 9px; border: 1px solid #d4dcea; vertical-align: middle; font-size: 12.5px; }
 td.td-n  { text-align: center; font-weight: 700; color: var(--az2); width: 40px; }
-td.td-r  { text-align: center; width: 68px; }
+td.td-r  { text-align: center; width: 52px; }
+td.td-d  { font-size: 14.5px; }
 td.td-ob { min-width: 120px; }
 
 /* Checkboxes (radio styled) */
@@ -519,10 +520,10 @@ td.td-ob { min-width: 120px; }
     <table aria-label="Sección A">
       <thead><tr>
         <th style="width:38px">N°</th>
-        <th class="th-l" style="width:28%">Documento / Contenido</th>
-        <th style="width:64px">Sí</th>
-        <th style="width:64px">No</th>
-        <th style="width:90px">En Proceso</th>
+        <th class="th-l" style="width:38%">Documento / Contenido</th>
+        <th style="width:50px">Sí</th>
+        <th style="width:50px">No</th>
+        <th style="width:70px">En Proceso</th>
         <th style="width:30%">Observaciones</th>
       </tr></thead>
       <tbody id="tbody-a"></tbody>
@@ -535,10 +536,10 @@ td.td-ob { min-width: 120px; }
     <table aria-label="Sección B">
       <thead><tr>
         <th style="width:38px">N°</th>
-        <th class="th-l" style="width:28%">Documento / Contenido</th>
-        <th style="width:64px">Sí</th>
-        <th style="width:64px">No</th>
-        <th style="width:90px">En Proceso</th>
+        <th class="th-l" style="width:38%">Documento / Contenido</th>
+        <th style="width:50px">Sí</th>
+        <th style="width:50px">No</th>
+        <th style="width:70px">En Proceso</th>
         <th style="width:30%">Observaciones</th>
       </tr></thead>
       <tbody id="tbody-b"></tbody>
@@ -751,7 +752,7 @@ function makeRow(rowNum, gid, text) {
   var tr = document.createElement('tr');
   tr.id = 'row-' + gid;
   var tdN = document.createElement('td'); tdN.className = 'td-n'; tdN.textContent = rowNum;
-  var tdD = document.createElement('td'); tdD.textContent = text;
+  var tdD = document.createElement('td'); tdD.className = 'td-d'; tdD.textContent = text;
   function mkRCell(val, colCls, lbl) {
     var td = document.createElement('td'); td.className = 'td-r ' + colCls;
     var lab = document.createElement('label');
@@ -1248,8 +1249,8 @@ window.exportCSV = function() {
     ' xmlns:html="http://www.w3.org/TR/REC-html40">\n'+
     sty+'\n'+
     '<Worksheet ss:Name="Checklist"><Table>\n'+
-    '<Column ss:Width="30"/><Column ss:Width="220"/><Column ss:Width="42"/>'+
-    '<Column ss:Width="42"/><Column ss:Width="75"/><Column ss:Width="265"/>\n'+
+    '<Column ss:Width="30"/><Column ss:Width="280"/><Column ss:Width="34"/>'+
+    '<Column ss:Width="34"/><Column ss:Width="58"/><Column ss:Width="265"/>\n'+
     rows+
     '</Table></Worksheet></Workbook>';
 
