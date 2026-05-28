@@ -8,8 +8,6 @@
 <!-- Firebase SDK (compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<!-- SheetJS para export Excel real -->
-<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
 <style id="sty-page">@page { size: A4 portrait; margin: 13mm 12mm 16mm; }</style>
 <style>
@@ -1018,72 +1016,136 @@ window.exportCSV = function() {
   var unidad  = document.getElementById('f-unidad').value  || '';
   var fecha   = document.getElementById('f-fecha').value   || '';
   var revisor = document.getElementById('f-revisor').value || '';
-  var pct  = document.getElementById('pct').textContent;
-  var rsi  = parseInt(document.getElementById('r-si').textContent)  || 0;
-  var rno  = parseInt(document.getElementById('r-no').textContent)  || 0;
-  var rproc= parseInt(document.getElementById('r-proc').textContent)|| 0;
-  var rsin = parseInt(document.getElementById('r-sin').textContent) || 0;
+  var pctRaw  = document.getElementById('pct').textContent || '0';
+  var pctDisp = pctRaw.replace(/%/g,'') + '%';
+  var rsi  = document.getElementById('r-si').textContent;
+  var rno  = document.getElementById('r-no').textContent;
+  var rproc= document.getElementById('r-proc').textContent;
+  var rsin = document.getElementById('r-sin').textContent;
 
-  /* ── construir filas ── */
-  var aoa = [];   // array of arrays
+  function xe(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-  /* Título */
-  aoa.push(['CHECKLIST — ARCHIVADOR DE PROCESOS Y RIESGOS','','','','','']);
-  aoa.push(['Unidad:', unidad, 'Fecha:', fecha, 'Revisado por:', revisor]);
-  aoa.push(['']);
+  /* ── Estilos SpreadsheetML ── */
+  var bdr = '<Borders>'+
+    '<Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#BBBBBB"/>'+
+    '<Border ss:Position="Left"   ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#BBBBBB"/>'+
+    '<Border ss:Position="Right"  ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#BBBBBB"/>'+
+    '<Border ss:Position="Top"    ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#BBBBBB"/>'+
+  '</Borders>';
 
-  /* Encabezado columnas */
-  aoa.push(['N°', 'Documento / Contenido', 'Sí', 'No', 'En Proceso', 'Observaciones']);
+  var BG = {none:'#FFFFFF', si:'#d4edda', no:'#f8d7da', proc:'#fff3cd'};
 
-  function pushRow(gid, doc) {
-    var c  = document.querySelector('input[name="g'+gid+'"]:checked');
-    var st = c ? c.value : '';
-    var ta = document.querySelector('.obs[data-id="'+gid+'"]');
-    aoa.push([
-      gid,
-      doc,
-      st === 'si'   ? '✔' : '',
-      st === 'no'   ? '✖' : '',
-      st === 'proc' ? '◑' : '',
-      ta ? ta.value : ''
-    ]);
+  var sty = '<Styles>';
+  sty += '<Style ss:ID="Default"><Font ss:FontName="Arial" ss:Size="10"/><Alignment ss:Vertical="Center"/></Style>';
+  sty += '<Style ss:ID="s_title"><Font ss:FontName="Arial" ss:Bold="1" ss:Size="13" ss:Color="#FFFFFF"/>'+
+         '<Interior ss:Color="#1F3864" ss:Pattern="Solid"/>'+
+         '<Alignment ss:Horizontal="Center" ss:Vertical="Center"/>'+bdr+'</Style>';
+  sty += '<Style ss:ID="s_mlbl"><Font ss:FontName="Arial" ss:Bold="1" ss:Size="10"/>'+bdr+'</Style>';
+  sty += '<Style ss:ID="s_mval"><Font ss:FontName="Arial" ss:Size="10"/>'+bdr+'</Style>';
+  sty += '<Style ss:ID="s_hdr"><Font ss:FontName="Arial" ss:Bold="1" ss:Size="10" ss:Color="#FFFFFF"/>'+
+         '<Interior ss:Color="#1F3864" ss:Pattern="Solid"/>'+
+         '<Alignment ss:Horizontal="Center" ss:Vertical="Center" ss:WrapText="1"/>'+bdr+'</Style>';
+  sty += '<Style ss:ID="s_sec"><Font ss:FontName="Arial" ss:Bold="1" ss:Size="10" ss:Color="#FFFFFF"/>'+
+         '<Interior ss:Color="#2E5496" ss:Pattern="Solid"/>'+
+         '<Alignment ss:Vertical="Center"/>'+bdr+'</Style>';
+  sty += '<Style ss:ID="s_sum_h"><Font ss:FontName="Arial" ss:Bold="1" ss:Size="10" ss:Color="#FFFFFF"/>'+
+         '<Interior ss:Color="#1F3864" ss:Pattern="Solid"/>'+
+         '<Alignment ss:Horizontal="Center" ss:Vertical="Center"/>'+bdr+'</Style>';
+  sty += '<Style ss:ID="s_avl"><Font ss:FontName="Arial" ss:Bold="1" ss:Size="10"/>'+
+         '<Interior ss:Color="#D6E4F7" ss:Pattern="Solid"/>'+bdr+'</Style>';
+  sty += '<Style ss:ID="s_avv"><Font ss:FontName="Arial" ss:Bold="1" ss:Size="13"/>'+
+         '<Interior ss:Color="#D6E4F7" ss:Pattern="Solid"/>'+
+         '<Alignment ss:Horizontal="Center" ss:Vertical="Center"/>'+bdr+'</Style>';
+
+  ['none','si','no','proc'].forEach(function(st){
+    var bg = BG[st];
+    sty += '<Style ss:ID="s_n_'+st+'"><Font ss:FontName="Arial" ss:Size="10"/>'+
+           '<Interior ss:Color="'+bg+'" ss:Pattern="Solid"/>'+
+           '<Alignment ss:Horizontal="Center" ss:Vertical="Center"/>'+bdr+'</Style>';
+    sty += '<Style ss:ID="s_t_'+st+'"><Font ss:FontName="Arial" ss:Size="10"/>'+
+           '<Interior ss:Color="'+bg+'" ss:Pattern="Solid"/>'+
+           '<Alignment ss:Vertical="Center"/>'+bdr+'</Style>';
+    sty += '<Style ss:ID="s_si_'+st+'"><Font ss:FontName="Arial" ss:Size="11" ss:Color="#1e7e34"/>'+
+           '<Interior ss:Color="'+bg+'" ss:Pattern="Solid"/>'+
+           '<Alignment ss:Horizontal="Center" ss:Vertical="Center"/>'+bdr+'</Style>';
+    sty += '<Style ss:ID="s_no_'+st+'"><Font ss:FontName="Arial" ss:Size="11" ss:Color="#c82333"/>'+
+           '<Interior ss:Color="'+bg+'" ss:Pattern="Solid"/>'+
+           '<Alignment ss:Horizontal="Center" ss:Vertical="Center"/>'+bdr+'</Style>';
+    sty += '<Style ss:ID="s_p_'+st+'"><Font ss:FontName="Arial" ss:Size="11" ss:Color="#b07d00"/>'+
+           '<Interior ss:Color="'+bg+'" ss:Pattern="Solid"/>'+
+           '<Alignment ss:Horizontal="Center" ss:Vertical="Center"/>'+bdr+'</Style>';
+    sty += '<Style ss:ID="s_sl_'+st+'"><Font ss:FontName="Arial" ss:Size="10"/>'+
+           '<Interior ss:Color="'+bg+'" ss:Pattern="Solid"/>'+bdr+'</Style>';
+    sty += '<Style ss:ID="s_sv_'+st+'"><Font ss:FontName="Arial" ss:Bold="1" ss:Size="10"/>'+
+           '<Interior ss:Color="'+bg+'" ss:Pattern="Solid"/>'+
+           '<Alignment ss:Horizontal="Center"/>'+bdr+'</Style>';
+  });
+  sty += '</Styles>';
+
+  /* ── Helpers celdas ── */
+  function C(val, sid, type){
+    return '<Cell'+(sid?' ss:StyleID="'+sid+'"':'')+'>'+
+           '<Data ss:Type="'+(type||'String')+'">'+xe(String(val||''))+'</Data></Cell>';
+  }
+  function MC(val, sid, merge){
+    return '<Cell ss:StyleID="'+sid+'" ss:MergeAcross="'+merge+'">'+
+           '<Data ss:Type="String">'+xe(val)+'</Data></Cell>';
   }
 
-  aoa.push(['── SECCIÓN A ──','','','','','']);
-  DOCS_A.forEach(function(d,i){ pushRow(i+1, d); });
+  /* ── Fila de dato ── */
+  function dataRow(gid, doc){
+    var c  = document.querySelector('input[name="g'+gid+'"]:checked');
+    var st = (c ? c.value : '') || 'none';
+    var ta = document.querySelector('.obs[data-id="'+gid+'"]');
+    var obs = ta ? ta.value : '';
+    return '<Row ss:Height="18">'+
+      C(gid,  's_n_'+st, 'Number')+
+      C(doc,  's_t_'+st)+
+      C(st==='si'  ?'✔':'', 's_si_'+st)+
+      C(st==='no'  ?'✖':'', 's_no_'+st)+
+      C(st==='proc'?'◑':'', 's_p_'+st)+
+      C(obs,  's_t_'+st)+
+    '</Row>';
+  }
 
-  aoa.push(['── SECCIÓN B ──','','','','','']);
-  DOCS_B.forEach(function(d,i){ pushRow(DOCS_A.length+i+1, d); });
+  /* ── Filas del sheet ── */
+  var rows = '';
+  rows += '<Row ss:Height="28">'+MC('CHECKLIST — ARCHIVADOR DE PROCESOS Y RIESGOS','s_title',5)+'</Row>';
+  rows += '<Row ss:Height="20">'+C('Unidad:','s_mlbl')+C(unidad,'s_mval')+C('Fecha:','s_mlbl')+C(fecha,'s_mval')+C('Revisado por:','s_mlbl')+C(revisor,'s_mval')+'</Row>';
+  rows += '<Row ss:Height="6"></Row>';
+  rows += '<Row ss:Height="22">'+C('N°','s_hdr')+C('Documento / Contenido','s_hdr')+C('✔  Sí','s_hdr')+C('✖  No','s_hdr')+C('◑  En Proceso','s_hdr')+C('Observaciones','s_hdr')+'</Row>';
+  rows += '<Row ss:Height="18">'+MC('SECCIÓN  A','s_sec',5)+'</Row>';
+  DOCS_A.forEach(function(d,i){ rows += dataRow(i+1, d); });
+  rows += '<Row ss:Height="18">'+MC('SECCIÓN  B','s_sec',5)+'</Row>';
+  DOCS_B.forEach(function(d,i){ rows += dataRow(DOCS_A.length+i+1, d); });
+  rows += '<Row ss:Height="10"></Row>';
+  rows += '<Row ss:Height="20">'+MC('RESUMEN','s_sum_h',1)+'</Row>';
+  rows += '<Row>'+C('Total documentos','s_sl_none')+C('20','s_sv_none','Number')+'</Row>';
+  rows += '<Row>'+C('✔  Sí','s_sl_si')+C(rsi,'s_sv_si','Number')+'</Row>';
+  rows += '<Row>'+C('✖  No','s_sl_no')+C(rno,'s_sv_no','Number')+'</Row>';
+  rows += '<Row>'+C('◑  En Proceso','s_sl_proc')+C(rproc,'s_sv_proc','Number')+'</Row>';
+  rows += '<Row>'+C('Sin marcar','s_sl_none')+C(rsin,'s_sv_none','Number')+'</Row>';
+  rows += '<Row ss:Height="24">'+C('Avance','s_avl')+C(pctDisp,'s_avv')+'</Row>';
 
-  /* Resumen */
-  aoa.push(['']);
-  aoa.push(['RESUMEN','','','','','']);
-  aoa.push(['Total documentos', 20,'','','','']);
-  aoa.push(['Sí ✔',   rsi,  '','','','']);
-  aoa.push(['No ✖',   rno,  '','','','']);
-  aoa.push(['En Proceso ◑', rproc,'','','','']);
-  aoa.push(['Sin marcar',   rsin, '','','','']);
-  aoa.push(['Avance', pct+'%','','','','']);
+  /* ── XML final ── */
+  var xml = '<?xml version="1.0" encoding="UTF-8"?>\n'+
+    '<?mso-application progid="Excel.Sheet"?>\n'+
+    '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n'+
+    ' xmlns:o="urn:schemas-microsoft-com:office:office"\n'+
+    ' xmlns:x="urn:schemas-microsoft-com:office:excel"\n'+
+    ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"\n'+
+    ' xmlns:html="http://www.w3.org/TR/REC-html40">\n'+
+    sty+'\n'+
+    '<Worksheet ss:Name="Checklist"><Table>\n'+
+    '<Column ss:Width="30"/><Column ss:Width="310"/><Column ss:Width="42"/>'+
+    '<Column ss:Width="42"/><Column ss:Width="75"/><Column ss:Width="190"/>\n'+
+    rows+
+    '</Table></Worksheet></Workbook>';
 
-  /* ── crear workbook con SheetJS ── */
-  var ws = XLSX.utils.aoa_to_sheet(aoa);
-
-  /* Anchos de columna */
-  ws['!cols'] = [
-    {wch: 5},   // N°
-    {wch: 58},  // Documento
-    {wch: 7},   // Sí
-    {wch: 7},   // No
-    {wch: 12},  // En Proceso
-    {wch: 35}   // Observaciones
-  ];
-
-  /* Combinar celda del título (fila 0, cols 0-5) */
-  ws['!merges'] = [{s:{r:0,c:0}, e:{r:0,c:5}}];
-
-  var wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Checklist');
-  XLSX.writeFile(wb, 'Checklist_'+(unidad||'sin_nombre').replace(/\s+/g,'_')+'.xlsx');
+  var blob = new Blob([xml],{type:'application/vnd.ms-excel;charset=utf-8'});
+  var url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href=url; a.download='Checklist_'+(unidad||'sin_nombre').replace(/\s+/g,'_')+'.xls';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
 };
 
 /* ══════════════════════════════════════════
