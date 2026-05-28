@@ -148,14 +148,14 @@ tbody tr.s-no   td.td-col-no   { background: var(--rojo-bg)  !important; }
 tbody tr.s-proc td.td-col-proc { background: var(--amar-bg)  !important; }
 td { padding: 6px 5px; border: 1px solid #d4dcea; vertical-align: middle; font-size: 20px; }
 td.td-n  { text-align: center; font-weight: 700; color: var(--az2); width: 10px; padding: 4px 1px; }
-td.td-r  { text-align: center; width: 20px; padding: 4px 1px; }
+td.td-r  { text-align: center; width: 20px; padding: 3px 0; }
 td.td-d  { font-size: 20px; }
 td.td-ob { min-width: 120px; }
 
 /* Checkboxes (radio styled) */
-.chk { appearance: none; -webkit-appearance: none; width: 21px; height: 21px; border: 2px solid #aab4c8; border-radius: 5px; cursor: pointer; position: relative; display: inline-block; vertical-align: middle; transition: all .18s; }
+.chk { appearance: none; -webkit-appearance: none; width: 16px; height: 16px; border: 2px solid #aab4c8; border-radius: 4px; cursor: pointer; position: relative; display: inline-block; vertical-align: middle; transition: all .18s; }
 .chk:hover:not(:checked) { border-color: var(--az2); background: #ebf0ff; }
-.chk:checked::after { content: '✓'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 13px; font-weight: 900; color: #fff; line-height: 1; }
+.chk:checked::after { content: '✓'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 10px; font-weight: 900; color: #fff; line-height: 1; }
 .chk-si:checked   { background: #28a745; border-color: #28a745; }
 .chk-no:checked   { background: #dc3545; border-color: #dc3545; }
 .chk-proc:checked { background: #c78b00; border-color: #c78b00; }
@@ -333,7 +333,7 @@ td.td-ob { min-width: 120px; }
   table { min-width: auto !important; font-size: 14pt !important; }
   thead th { background: #d6e4f7 !important; color: #1F3864 !important; font-size: 12pt !important; padding: 5px 3px !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   thead th[style*="width:10px"] { width: 10px !important; padding: 5px 1px !important; }
-  thead th[style*="width:20px"] { width: 20px !important; padding: 5px 1px !important; }
+  thead th[style*="writing-mode"] { width: 20px !important; padding: 4px 0 !important; }
   td { padding: 5px 4px !important; font-size: 14pt !important; border: 1px solid #c8d0e0 !important; }
   td.td-n  { width: 10px !important; padding: 5px 1px !important; font-size: 12pt !important; }
   td.td-r  { width: 20px !important; padding: 5px 1px !important; }
@@ -526,9 +526,9 @@ td.td-ob { min-width: 120px; }
       <thead><tr>
         <th style="width:10px;padding:5px 1px">N°</th>
         <th class="th-l" style="width:40%">Documento / Contenido</th>
-        <th style="width:20px;padding:5px 1px">Sí</th>
-        <th style="width:20px;padding:5px 1px">No</th>
-        <th style="width:20px;padding:5px 1px;white-space:normal;line-height:1.2;word-break:break-word">En Proceso</th>
+        <th style="width:20px;padding:4px 0;white-space:nowrap;writing-mode:vertical-rl;transform:rotate(180deg)">Sí</th>
+        <th style="width:20px;padding:4px 0;white-space:nowrap;writing-mode:vertical-rl;transform:rotate(180deg)">No</th>
+        <th style="width:20px;padding:4px 0;white-space:nowrap;writing-mode:vertical-rl;transform:rotate(180deg)">En Proceso</th>
         <th style="width:30%">Observaciones</th>
       </tr></thead>
       <tbody id="tbody-a"></tbody>
@@ -542,9 +542,9 @@ td.td-ob { min-width: 120px; }
       <thead><tr>
         <th style="width:10px;padding:5px 1px">N°</th>
         <th class="th-l" style="width:40%">Documento / Contenido</th>
-        <th style="width:20px;padding:5px 1px">Sí</th>
-        <th style="width:20px;padding:5px 1px">No</th>
-        <th style="width:20px;padding:5px 1px;white-space:normal;line-height:1.2;word-break:break-word">En Proceso</th>
+        <th style="width:20px;padding:4px 0;white-space:nowrap;writing-mode:vertical-rl;transform:rotate(180deg)">Sí</th>
+        <th style="width:20px;padding:4px 0;white-space:nowrap;writing-mode:vertical-rl;transform:rotate(180deg)">No</th>
+        <th style="width:20px;padding:4px 0;white-space:nowrap;writing-mode:vertical-rl;transform:rotate(180deg)">En Proceso</th>
         <th style="width:30%">Observaciones</th>
       </tr></thead>
       <tbody id="tbody-b"></tbody>
