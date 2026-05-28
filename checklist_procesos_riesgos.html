@@ -139,9 +139,9 @@ thead th.th-l { text-align: left; }
 tbody tr { transition: background-color .22s; }
 tbody tr:nth-child(even) { background: #f5f8ff; }
 tbody tr:nth-child(odd)  { background: #fff; }
-tbody tr.s-si   { background: var(--verde-bg) !important; }
-tbody tr.s-no   { background: var(--rojo-bg)  !important; }
-tbody tr.s-proc { background: var(--amar-bg)  !important; }
+tbody tr.s-si   td.td-col-si   { background: var(--verde-bg) !important; }
+tbody tr.s-no   td.td-col-no   { background: var(--rojo-bg)  !important; }
+tbody tr.s-proc td.td-col-proc { background: var(--amar-bg)  !important; }
 td { padding: 6px 9px; border: 1px solid #d4dcea; vertical-align: middle; font-size: 12.5px; }
 td.td-n  { text-align: center; font-weight: 700; color: var(--az2); width: 40px; }
 td.td-r  { text-align: center; width: 68px; }
@@ -310,9 +310,9 @@ td.td-ob { min-width: 160px; }
   table { min-width: auto !important; font-size: 8.5pt !important; }
   thead th { background: var(--az1) !important; font-size: 8pt !important; padding: 5px 7px !important; }
   td { padding: 4px 6px !important; font-size: 8.5pt !important; border: 1px solid #c8d0e0 !important; }
-  tbody tr.s-si   { background: var(--verde-bg) !important; }
-  tbody tr.s-no   { background: var(--rojo-bg)  !important; }
-  tbody tr.s-proc { background: var(--amar-bg)  !important; }
+  tbody tr.s-si   td.td-col-si   { background: var(--verde-bg) !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  tbody tr.s-no   td.td-col-no   { background: var(--rojo-bg)  !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  tbody tr.s-proc td.td-col-proc { background: var(--amar-bg)  !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .chk { display: none !important; }
   td.td-col-si::before, td.td-col-no::before, td.td-col-proc::before { content: '□'; font-size: 11pt; color: #ccc; display: block; text-align: center; }
   tr.s-si   td.td-col-si::before   { content: '✔'; color: #28a745 !important; font-weight: 900; }
@@ -1057,23 +1057,37 @@ window.exportCSV = function() {
          '<Interior ss:Color="#D6E4F7" ss:Pattern="Solid"/>'+
          '<Alignment ss:Horizontal="Center" ss:Vertical="Center"/>'+bdr+'</Style>';
 
+  /* Celdas de datos — siempre blanco */
+  sty += '<Style ss:ID="s_n"><Font ss:FontName="Arial" ss:Size="10"/>'+
+         '<Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/>'+
+         '<Alignment ss:Horizontal="Center" ss:Vertical="Center"/>'+bdr+'</Style>';
+  sty += '<Style ss:ID="s_t"><Font ss:FontName="Arial" ss:Size="10"/>'+
+         '<Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/>'+
+         '<Alignment ss:Vertical="Center"/>'+bdr+'</Style>';
+  /* Celdas Sí — marcada verde / desmarcada blanco */
+  sty += '<Style ss:ID="s_si_on"><Font ss:FontName="Arial" ss:Size="11" ss:Color="#1e7e34"/>'+
+         '<Interior ss:Color="#d4edda" ss:Pattern="Solid"/>'+
+         '<Alignment ss:Horizontal="Center" ss:Vertical="Center"/>'+bdr+'</Style>';
+  sty += '<Style ss:ID="s_si_off"><Font ss:FontName="Arial" ss:Size="10"/>'+
+         '<Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/>'+
+         '<Alignment ss:Horizontal="Center" ss:Vertical="Center"/>'+bdr+'</Style>';
+  /* Celdas No — marcada rojo / desmarcada blanco */
+  sty += '<Style ss:ID="s_no_on"><Font ss:FontName="Arial" ss:Size="11" ss:Color="#c82333"/>'+
+         '<Interior ss:Color="#f8d7da" ss:Pattern="Solid"/>'+
+         '<Alignment ss:Horizontal="Center" ss:Vertical="Center"/>'+bdr+'</Style>';
+  sty += '<Style ss:ID="s_no_off"><Font ss:FontName="Arial" ss:Size="10"/>'+
+         '<Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/>'+
+         '<Alignment ss:Horizontal="Center" ss:Vertical="Center"/>'+bdr+'</Style>';
+  /* Celdas En Proceso — marcada amarillo / desmarcada blanco */
+  sty += '<Style ss:ID="s_p_on"><Font ss:FontName="Arial" ss:Size="11" ss:Color="#b07d00"/>'+
+         '<Interior ss:Color="#fff3cd" ss:Pattern="Solid"/>'+
+         '<Alignment ss:Horizontal="Center" ss:Vertical="Center"/>'+bdr+'</Style>';
+  sty += '<Style ss:ID="s_p_off"><Font ss:FontName="Arial" ss:Size="10"/>'+
+         '<Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/>'+
+         '<Alignment ss:Horizontal="Center" ss:Vertical="Center"/>'+bdr+'</Style>';
+  /* Resumen */
   ['none','si','no','proc'].forEach(function(st){
     var bg = BG[st];
-    sty += '<Style ss:ID="s_n_'+st+'"><Font ss:FontName="Arial" ss:Size="10"/>'+
-           '<Interior ss:Color="'+bg+'" ss:Pattern="Solid"/>'+
-           '<Alignment ss:Horizontal="Center" ss:Vertical="Center"/>'+bdr+'</Style>';
-    sty += '<Style ss:ID="s_t_'+st+'"><Font ss:FontName="Arial" ss:Size="10"/>'+
-           '<Interior ss:Color="'+bg+'" ss:Pattern="Solid"/>'+
-           '<Alignment ss:Vertical="Center"/>'+bdr+'</Style>';
-    sty += '<Style ss:ID="s_si_'+st+'"><Font ss:FontName="Arial" ss:Size="11" ss:Color="#1e7e34"/>'+
-           '<Interior ss:Color="'+bg+'" ss:Pattern="Solid"/>'+
-           '<Alignment ss:Horizontal="Center" ss:Vertical="Center"/>'+bdr+'</Style>';
-    sty += '<Style ss:ID="s_no_'+st+'"><Font ss:FontName="Arial" ss:Size="11" ss:Color="#c82333"/>'+
-           '<Interior ss:Color="'+bg+'" ss:Pattern="Solid"/>'+
-           '<Alignment ss:Horizontal="Center" ss:Vertical="Center"/>'+bdr+'</Style>';
-    sty += '<Style ss:ID="s_p_'+st+'"><Font ss:FontName="Arial" ss:Size="11" ss:Color="#b07d00"/>'+
-           '<Interior ss:Color="'+bg+'" ss:Pattern="Solid"/>'+
-           '<Alignment ss:Horizontal="Center" ss:Vertical="Center"/>'+bdr+'</Style>';
     sty += '<Style ss:ID="s_sl_'+st+'"><Font ss:FontName="Arial" ss:Size="10"/>'+
            '<Interior ss:Color="'+bg+'" ss:Pattern="Solid"/>'+bdr+'</Style>';
     sty += '<Style ss:ID="s_sv_'+st+'"><Font ss:FontName="Arial" ss:Bold="1" ss:Size="10"/>'+
@@ -1092,19 +1106,19 @@ window.exportCSV = function() {
            '<Data ss:Type="String">'+xe(val)+'</Data></Cell>';
   }
 
-  /* ── Fila de dato ── */
+  /* ── Fila de dato — solo la celda marcada se colorea ── */
   function dataRow(gid, doc){
     var c  = document.querySelector('input[name="g'+gid+'"]:checked');
     var st = (c ? c.value : '') || 'none';
     var ta = document.querySelector('.obs[data-id="'+gid+'"]');
     var obs = ta ? ta.value : '';
     return '<Row ss:Height="18">'+
-      C(gid,  's_n_'+st, 'Number')+
-      C(doc,  's_t_'+st)+
-      C(st==='si'  ?'✔':'', 's_si_'+st)+
-      C(st==='no'  ?'✖':'', 's_no_'+st)+
-      C(st==='proc'?'◑':'', 's_p_'+st)+
-      C(obs,  's_t_'+st)+
+      C(gid, 's_n', 'Number')+
+      C(doc, 's_t')+
+      C(st==='si'   ? '✔' : '', st==='si'   ? 's_si_on' : 's_si_off')+
+      C(st==='no'   ? '✖' : '', st==='no'   ? 's_no_on' : 's_no_off')+
+      C(st==='proc' ? '◑' : '', st==='proc' ? 's_p_on'  : 's_p_off')+
+      C(obs, 's_t')+
     '</Row>';
   }
 
