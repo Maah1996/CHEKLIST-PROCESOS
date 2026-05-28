@@ -148,8 +148,8 @@ tbody tr.s-no   td.td-col-no   { background: var(--rojo-bg)  !important; }
 tbody tr.s-proc td.td-col-proc { background: var(--amar-bg)  !important; }
 td { padding: 6px 9px; border: 1px solid #d4dcea; vertical-align: middle; font-size: 12.5px; }
 td.td-n  { text-align: center; font-weight: 700; color: var(--az2); width: 40px; }
-td.td-r  { text-align: center; width: 52px; }
-td.td-d  { font-size: 14.5px; }
+td.td-r  { text-align: center; width: 30px; padding: 4px 2px; }
+td.td-d  { font-size: 17px; }
 td.td-ob { min-width: 120px; }
 
 /* Checkboxes (radio styled) */
@@ -521,9 +521,9 @@ td.td-ob { min-width: 120px; }
       <thead><tr>
         <th style="width:38px">N°</th>
         <th class="th-l" style="width:38%">Documento / Contenido</th>
-        <th style="width:50px">Sí</th>
-        <th style="width:50px">No</th>
-        <th style="width:70px">En Proceso</th>
+        <th style="width:30px;padding:5px 2px">Sí</th>
+        <th style="width:30px;padding:5px 2px">No</th>
+        <th style="width:30px;padding:5px 2px;white-space:normal;line-height:1.2;word-break:break-word">En Proceso</th>
         <th style="width:30%">Observaciones</th>
       </tr></thead>
       <tbody id="tbody-a"></tbody>
@@ -537,9 +537,9 @@ td.td-ob { min-width: 120px; }
       <thead><tr>
         <th style="width:38px">N°</th>
         <th class="th-l" style="width:38%">Documento / Contenido</th>
-        <th style="width:50px">Sí</th>
-        <th style="width:50px">No</th>
-        <th style="width:70px">En Proceso</th>
+        <th style="width:30px;padding:5px 2px">Sí</th>
+        <th style="width:30px;padding:5px 2px">No</th>
+        <th style="width:30px;padding:5px 2px;white-space:normal;line-height:1.2;word-break:break-word">En Proceso</th>
         <th style="width:30%">Observaciones</th>
       </tr></thead>
       <tbody id="tbody-b"></tbody>
@@ -1249,8 +1249,8 @@ window.exportCSV = function() {
     ' xmlns:html="http://www.w3.org/TR/REC-html40">\n'+
     sty+'\n'+
     '<Worksheet ss:Name="Checklist"><Table>\n'+
-    '<Column ss:Width="30"/><Column ss:Width="280"/><Column ss:Width="34"/>'+
-    '<Column ss:Width="34"/><Column ss:Width="58"/><Column ss:Width="265"/>\n'+
+    '<Column ss:Width="30"/><Column ss:Width="290"/><Column ss:Width="26"/>'+
+    '<Column ss:Width="26"/><Column ss:Width="26"/><Column ss:Width="265"/>\n'+
     rows+
     '</Table></Worksheet></Workbook>';
 
