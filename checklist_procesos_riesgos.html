@@ -149,7 +149,7 @@ tbody tr.s-proc td.td-col-proc { background: var(--amar-bg)  !important; }
 td { padding: 6px 9px; border: 1px solid #d4dcea; vertical-align: middle; font-size: 12.5px; }
 td.td-n  { text-align: center; font-weight: 700; color: var(--az2); width: 40px; }
 td.td-r  { text-align: center; width: 68px; }
-td.td-ob { min-width: 160px; }
+td.td-ob { min-width: 120px; }
 
 /* Checkboxes (radio styled) */
 .chk { appearance: none; -webkit-appearance: none; width: 21px; height: 21px; border: 2px solid #aab4c8; border-radius: 5px; cursor: pointer; position: relative; display: inline-block; vertical-align: middle; transition: all .18s; }
@@ -519,11 +519,11 @@ td.td-ob { min-width: 160px; }
     <table aria-label="Sección A">
       <thead><tr>
         <th style="width:38px">N°</th>
-        <th class="th-l">Documento / Contenido</th>
+        <th class="th-l" style="width:28%">Documento / Contenido</th>
         <th style="width:64px">Sí</th>
         <th style="width:64px">No</th>
         <th style="width:90px">En Proceso</th>
-        <th>Observaciones</th>
+        <th style="width:30%">Observaciones</th>
       </tr></thead>
       <tbody id="tbody-a"></tbody>
     </table>
@@ -535,11 +535,11 @@ td.td-ob { min-width: 160px; }
     <table aria-label="Sección B">
       <thead><tr>
         <th style="width:38px">N°</th>
-        <th class="th-l">Documento / Contenido</th>
+        <th class="th-l" style="width:28%">Documento / Contenido</th>
         <th style="width:64px">Sí</th>
         <th style="width:64px">No</th>
         <th style="width:90px">En Proceso</th>
-        <th>Observaciones</th>
+        <th style="width:30%">Observaciones</th>
       </tr></thead>
       <tbody id="tbody-b"></tbody>
     </table>
@@ -1248,8 +1248,8 @@ window.exportCSV = function() {
     ' xmlns:html="http://www.w3.org/TR/REC-html40">\n'+
     sty+'\n'+
     '<Worksheet ss:Name="Checklist"><Table>\n'+
-    '<Column ss:Width="30"/><Column ss:Width="310"/><Column ss:Width="42"/>'+
-    '<Column ss:Width="42"/><Column ss:Width="75"/><Column ss:Width="190"/>\n'+
+    '<Column ss:Width="30"/><Column ss:Width="220"/><Column ss:Width="42"/>'+
+    '<Column ss:Width="42"/><Column ss:Width="75"/><Column ss:Width="265"/>\n'+
     rows+
     '</Table></Worksheet></Workbook>';
 
