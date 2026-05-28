@@ -128,6 +128,10 @@ body { font-family: Arial, Helvetica, sans-serif; font-size: 14px; background: #
 .btn-fb-cfg   { background: #f5a623; color: #fff; }
 .btn:disabled { opacity: .5; cursor: not-allowed; transform: none !important; }
 
+/* ===== AUTH / ROLES ===== */
+.admin-only { display: none !important; }
+body.role-admin .admin-only { display: inline-flex !important; }
+
 /* ===== SECCIÓN ===== */
 .sec-hdr { background: var(--az2); color: #fff; padding: 8px 16px; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
 
@@ -220,6 +224,21 @@ td.td-ob { min-width: 160px; }
 .btn-u-save  { background: #d4edda; color: #1e7e34; }
 .btn-u-cancel{ background: #f0f0f0; color: #555; }
 .btn-u:hover { filter: brightness(.88); }
+
+/* ===== MODAL USUARIOS ===== */
+.ulist-item { display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid #eef2f8;flex-wrap:wrap; }
+.ulist-item:last-child { border-bottom:none; }
+.ulist-item:nth-child(even) { background:#f8faff; }
+.u-name { flex:1;font-size:13px;font-weight:700;color:var(--az1); }
+.u-badge { font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700; }
+.u-badge-admin { background:#1F3864;color:#fff; }
+.u-badge-user  { background:#e8ecf4;color:#555; }
+.u-status { font-size:11px;margin-left:2px; }
+.u-status-on  { color:#1e7e34; }
+.u-status-off { color:#c82333; }
+.btn-u-toggle { background:#e8f0ff;color:var(--az2);border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:700; }
+.btn-u-udel   { background:#fde8e8;color:#c82333;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer;font-family:inherit; }
+.btn-u-toggle:hover,.btn-u-udel:hover { filter:brightness(.88); }
 
 /* ===== MODAL FIREBASE CONFIG ===== */
 #fb-modal .modal-box { max-width: 520px; }
@@ -383,7 +402,7 @@ td.td-ob { min-width: 160px; }
 ══════════════════════════════════════════ -->
 <div class="modal-overlay" id="hist-modal" style="display:none" role="dialog" aria-label="Historial de checklists">
   <div class="modal-box">
-    <h3>&#128337; Historial de Checklists <button class="modal-close" onclick="closeHistModal()" title="Cerrar">&#10005;</button></h3>
+    <h3>&#128202; Base de datos <button class="modal-close" onclick="closeHistModal()" title="Cerrar">&#10005;</button></h3>
     <div class="hist-filter">
       <label>Unidad:</label>
       <select id="hist-unit-sel">
@@ -477,16 +496,21 @@ td.td-ob { min-width: 160px; }
   <div class="save-bar screen-only">
     <span class="save-status idle" id="save-status">&#128190; Sin guardar</span>
     <span style="font-size:11px;color:#888" id="save-info"></span>
+    <span style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <span id="user-label" style="font-size:12px;font-weight:700;color:var(--az1);display:none"></span>
+      <button id="btn-logout" onclick="doLogout()" style="display:none;font-size:11px;padding:4px 10px;border:none;border-radius:4px;background:#e8ecf2;color:#333;cursor:pointer;font-weight:700">Cerrar sesi&#243;n</button>
+    </span>
   </div>
 
   <!-- BOTONES -->
   <div class="btns screen-only">
     <button class="btn btn-guardar"  id="btn-guardar" onclick="guardarFirebase()">&#128190; Guardar</button>
-    <button class="btn btn-hist"     onclick="openHistModal()">&#128337; Historial</button>
+    <button class="btn btn-hist"     onclick="openHistModal()">&#128202; Base de datos</button>
     <button class="btn btn-impr"     onclick="openPrintModal()">&#128424; Imprimir / PDF</button>
-    <button class="btn btn-excel"    onclick="exportCSV()">&#128202; Excel (CSV)</button>
-    <button class="btn btn-limpiar"  onclick="limpiar()">&#128465; Limpiar</button>
-    <button class="btn btn-fb-cfg"   onclick="openFbModal()" title="Configurar Firebase">&#128293; Firebase</button>
+    <button class="btn btn-excel    admin-only" onclick="exportCSV()">&#128202; Excel (CSV)</button>
+    <button class="btn btn-limpiar  admin-only" onclick="limpiar()">&#128465; Limpiar</button>
+    <button class="btn btn-fb-cfg   admin-only" onclick="openFbModal()" title="Configurar Firebase">&#128293; Firebase</button>
+    <button class="btn admin-only"  onclick="openUsersModal()" style="background:#1F3864">&#128101; Usuarios</button>
   </div>
 
   <!-- SECCIÓN A -->
@@ -550,6 +574,60 @@ td.td-ob { min-width: 160px; }
   </div>
 
 </div><!-- /wrap -->
+
+<!-- ══════════════════════════════════════════
+     OVERLAY: LOGIN
+══════════════════════════════════════════ -->
+<div id="login-overlay" style="position:fixed;inset:0;background:rgba(15,27,55,.93);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+  <div style="background:#fff;border-radius:14px;padding:32px 36px;width:340px;max-width:94vw;box-shadow:0 24px 80px rgba(0,0,0,.45)">
+    <div style="text-align:center;margin-bottom:22px">
+      <div style="font-size:34px;margin-bottom:6px">&#128274;</div>
+      <h2 style="font-size:18px;font-weight:900;color:var(--az1);margin-bottom:4px">Iniciar Sesi&#243;n</h2>
+      <p style="font-size:12px;color:#888">Checklist &#8212; Archivador de Procesos y Riesgos</p>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:10px;font-weight:700;color:var(--az1);text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:4px">Usuario</label>
+      <input id="login-user" type="text" autocomplete="username" placeholder="Nombre de usuario"
+        style="width:100%;border:1px solid #bcc8da;border-radius:6px;padding:9px 12px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box">
+    </div>
+    <div style="margin-bottom:16px">
+      <label style="font-size:10px;font-weight:700;color:var(--az1);text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:4px">Contrase&#241;a</label>
+      <input id="login-pass" type="password" autocomplete="current-password" placeholder="Contrase&#241;a"
+        style="width:100%;border:1px solid #bcc8da;border-radius:6px;padding:9px 12px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box">
+    </div>
+    <div id="login-error" style="display:none;font-size:12px;color:#c82333;background:#f8d7da;border-radius:5px;padding:7px 10px;margin-bottom:12px"></div>
+    <button onclick="doLogin()" style="width:100%;padding:11px;border:none;border-radius:7px;background:var(--az1);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Ingresar</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: GESTIONAR USUARIOS (admin)
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="users-modal" style="display:none" role="dialog" aria-label="Gestionar usuarios">
+  <div class="modal-box" style="max-width:500px">
+    <h3>&#128101; Usuarios <button class="modal-close" onclick="closeUsersModal()" title="Cerrar">&#10005;</button></h3>
+    <!-- Crear usuario -->
+    <div style="background:#f5f8ff;border:1px solid #cdd6e8;border-radius:8px;padding:14px;margin-bottom:16px">
+      <div style="font-size:10px;font-weight:700;color:var(--az1);text-transform:uppercase;letter-spacing:.3px;margin-bottom:10px">Nuevo usuario</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <div>
+          <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:3px">Usuario</label>
+          <input type="text" id="nu-user" placeholder="nombre_usuario" autocomplete="off"
+            style="width:100%;border:1px solid #bcc8da;border-radius:5px;padding:7px 9px;font-size:12px;font-family:inherit;outline:none;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:3px">Contrase&#241;a</label>
+          <input type="password" id="nu-pass" autocomplete="new-password"
+            style="width:100%;border:1px solid #bcc8da;border-radius:5px;padding:7px 9px;font-size:12px;font-family:inherit;outline:none;box-sizing:border-box">
+        </div>
+      </div>
+      <div id="nu-error" style="display:none;font-size:11px;color:#c82333;margin-bottom:6px"></div>
+      <button onclick="createUser()" style="background:var(--az2);color:#fff;border:none;border-radius:5px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">+ Crear usuario</button>
+    </div>
+    <!-- Lista de usuarios -->
+    <div id="users-list" style="border:1px solid #e0e8f0;border-radius:6px;min-height:60px;max-height:300px;overflow-y:auto"></div>
+  </div>
+</div>
 
 <!-- ══════════════════════════════════════════
      JAVASCRIPT
@@ -835,10 +913,15 @@ window.loadHistory = function() {
         '<div class="hist-pct '+pcls+'">'+pct+'%</div>';
       var btnL=document.createElement('button'); btnL.className='btn-hist-load'; btnL.textContent='Cargar';
       btnL.addEventListener('click', function(){ cargarChecklist(doc.id, d); });
-      var btnD=document.createElement('button'); btnD.className='btn-hist-del'; btnD.textContent='🗑';
-      btnD.title='Eliminar registro';
-      btnD.addEventListener('click', function(){ eliminarHistorial(doc.id, item); });
-      item.appendChild(btnL); item.appendChild(btnD);
+      item.appendChild(btnL);
+      /* Botón eliminar solo para admin */
+      var sess; try{sess=JSON.parse(localStorage.getItem(KEY_AUTH));}catch(_){}
+      if (sess && sess.role==='admin') {
+        var btnD=document.createElement('button'); btnD.className='btn-hist-del'; btnD.textContent='🗑';
+        btnD.title='Eliminar registro';
+        btnD.addEventListener('click', function(){ eliminarHistorial(doc.id, item); });
+        item.appendChild(btnD);
+      }
       el.appendChild(item);
     });
   }).catch(function(e){
@@ -1010,7 +1093,7 @@ window.openHistModal = function() {
 window.closeHistModal = function() { document.getElementById('hist-modal').style.display='none'; };
 
 /* Cerrar modales al hacer clic en fondo */
-['units-modal','fb-modal','hist-modal','print-modal'].forEach(function(id){
+['units-modal','fb-modal','hist-modal','print-modal','users-modal'].forEach(function(id){
   var el=document.getElementById(id);
   el.addEventListener('click',function(e){ if(e.target===this) this.style.display='none'; });
 });
@@ -1169,6 +1252,222 @@ window.exportCSV = function() {
 };
 
 /* ══════════════════════════════════════════
+   AUTENTICACIÓN
+══════════════════════════════════════════ */
+var KEY_AUTH  = 'chk_auth_v1';
+var COL_USR   = 'chk_usuarios';
+var AUTH_SALT = 'chk-2026-';   /* salt fijo de aplicación */
+
+/* SHA-256 via Web Crypto API */
+function sha256(str) {
+  var buf = new TextEncoder().encode(str);
+  return crypto.subtle.digest('SHA-256', buf).then(function(hash) {
+    return Array.from(new Uint8Array(hash))
+      .map(function(b){ return ('00'+b.toString(16)).slice(-2); })
+      .join('');
+  });
+}
+function hashPwd(username, password) {
+  return sha256(AUTH_SALT + username.toLowerCase() + '::' + password);
+}
+
+/* Mostrar error en login */
+function loginErr(msg) {
+  var el = document.getElementById('login-error');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+window.doLogin = function() {
+  var user = (document.getElementById('login-user').value || '').trim().toLowerCase();
+  var pass =  document.getElementById('login-pass').value || '';
+  document.getElementById('login-error').style.display = 'none';
+  if (!user || !pass) { loginErr('Ingresa usuario y contraseña.'); return; }
+  if (!fbReady()) { loginErr('Error de conexión. Recarga la página.'); return; }
+  hashPwd(user, pass).then(function(hash) {
+    db.collection(COL_USR).where('username','==',user).limit(1).get()
+      .then(function(snap) {
+        if (snap.empty) { loginErr('Usuario o contraseña incorrectos.'); return; }
+        var docSnap = snap.docs[0];
+        var d = docSnap.data();
+        if (!d.activo)              { loginErr('Usuario desactivado. Contacta al administrador.'); return; }
+        if (d.passwordHash !== hash){ loginErr('Usuario o contraseña incorrectos.'); return; }
+        var session = { username: d.username, role: d.role, docId: docSnap.id };
+        try { localStorage.setItem(KEY_AUTH, JSON.stringify(session)); } catch(_) {}
+        document.getElementById('login-overlay').style.display = 'none';
+        applyRole(session);
+      })
+      .catch(function(e) { loginErr('Error de conexión: ' + e.message); });
+  });
+};
+
+window.doLogout = function() {
+  try { localStorage.removeItem(KEY_AUTH); } catch(_) {}
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('login-overlay').style.display = 'flex';
+  applyRole(null);
+};
+
+function applyRole(session) {
+  var body = document.body;
+  body.classList.remove('role-admin','role-user');
+  var lbl  = document.getElementById('user-label');
+  var btnL = document.getElementById('btn-logout');
+  if (!session) {
+    if (lbl)  lbl.style.display  = 'none';
+    if (btnL) btnL.style.display = 'none';
+    return;
+  }
+  if (session.role === 'admin') body.classList.add('role-admin');
+  else                          body.classList.add('role-user');
+  if (lbl)  { lbl.textContent = '&#128100; ' + session.username; lbl.style.display = 'inline'; }
+  if (btnL)   btnL.style.display = 'inline-block';
+}
+
+function initAuth() {
+  var raw; try { raw = JSON.parse(localStorage.getItem(KEY_AUTH)); } catch(_) {}
+  if (!raw || !raw.username || !raw.role || !raw.docId) {
+    document.getElementById('login-overlay').style.display = 'flex';
+    return;
+  }
+  /* Verificar que el usuario sigue activo en Firestore */
+  db.collection(COL_USR).doc(raw.docId).get()
+    .then(function(doc) {
+      if (!doc.exists || !doc.data().activo) { doLogout(); return; }
+      document.getElementById('login-overlay').style.display = 'none';
+      applyRole(raw);
+    })
+    .catch(function() {
+      /* Sin conexión → usar sesión local con rol almacenado */
+      document.getElementById('login-overlay').style.display = 'none';
+      applyRole(raw);
+    });
+}
+
+function bootstrapAdmin() {
+  if (!fbReady()) return;
+  db.collection(COL_USR).where('role','==','admin').limit(1).get()
+    .then(function(snap) {
+      if (!snap.empty) return; /* Ya existe al menos un admin */
+      hashPwd('admin', 'Admin2026#').then(function(hash) {
+        db.collection(COL_USR).add({
+          username:     'admin',
+          passwordHash: hash,
+          role:         'admin',
+          activo:       true,
+          creadoEn:     firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(function(){});
+      });
+    })
+    .catch(function(){});
+}
+
+/* ══════════════════════════════════════════
+   MODAL USUARIOS
+══════════════════════════════════════════ */
+window.openUsersModal = function() {
+  loadUsersList();
+  document.getElementById('users-modal').style.display = 'flex';
+};
+window.closeUsersModal = function() {
+  document.getElementById('users-modal').style.display = 'none';
+};
+
+function loadUsersList() {
+  if (!fbReady()) return;
+  var el = document.getElementById('users-list');
+  el.innerHTML = '<div style="text-align:center;padding:18px;color:#888;font-size:13px">&#8987; Cargando&#8230;</div>';
+  db.collection(COL_USR).orderBy('username').get()
+    .then(function(snap) {
+      if (snap.empty) {
+        el.innerHTML = '<div style="text-align:center;padding:18px;color:#888;font-size:13px">No hay usuarios.</div>';
+        return;
+      }
+      el.innerHTML = '';
+      var sess; try{sess=JSON.parse(localStorage.getItem(KEY_AUTH));}catch(_){}
+      snap.forEach(function(docSnap) {
+        var d = docSnap.data();
+        var isSelf = sess && sess.docId === docSnap.id;
+        var item = document.createElement('div'); item.className = 'ulist-item';
+        var roleBadge = d.role==='admin'
+          ? '<span class="u-badge u-badge-admin">Admin</span>'
+          : '<span class="u-badge u-badge-user">Usuario</span>';
+        var statusTxt = d.activo
+          ? '<span class="u-status u-status-on">&#9679; Activo</span>'
+          : '<span class="u-status u-status-off">&#9675; Inactivo</span>';
+        item.innerHTML = '<span class="u-name">'+esc(d.username||'')+'</span>'+roleBadge+statusTxt;
+        if (isSelf) {
+          item.innerHTML += '<span style="font-size:11px;color:#aaa;margin-left:auto">(t&#250;)</span>';
+        } else {
+          var btnT = document.createElement('button');
+          btnT.className = 'btn-u-toggle';
+          btnT.textContent = d.activo ? 'Desactivar' : 'Activar';
+          btnT.style.marginLeft = 'auto';
+          btnT.addEventListener('click', (function(id, act){ return function(){ toggleUser(id,!act); }; })(docSnap.id, d.activo));
+          item.appendChild(btnT);
+          /* Solo se puede eliminar usuarios no-admin */
+          if (d.role !== 'admin') {
+            var btnD = document.createElement('button');
+            btnD.className = 'btn-u-udel'; btnD.textContent = '&#128465;';
+            btnD.title = 'Eliminar usuario';
+            btnD.addEventListener('click', (function(id, nm){ return function(){ deleteUser(id,nm); }; })(docSnap.id, d.username));
+            item.appendChild(btnD);
+          }
+        }
+        el.appendChild(item);
+      });
+    })
+    .catch(function(e) {
+      el.innerHTML = '<div style="padding:12px;color:#c82333;font-size:12px">Error: '+esc(e.message)+'</div>';
+    });
+}
+
+window.createUser = function() {
+  var user  = (document.getElementById('nu-user').value || '').trim().toLowerCase();
+  var pass  =  document.getElementById('nu-pass').value || '';
+  var errEl = document.getElementById('nu-error');
+  errEl.style.display = 'none';
+  if (!user)        { errEl.textContent='Escribe un nombre de usuario.'; errEl.style.display='block'; return; }
+  if (user.length<3){ errEl.textContent='El usuario debe tener al menos 3 caracteres.'; errEl.style.display='block'; return; }
+  if (pass.length<6){ errEl.textContent='La contraseña debe tener al menos 6 caracteres.'; errEl.style.display='block'; return; }
+  if (!fbReady())   { errEl.textContent='Firebase no disponible.'; errEl.style.display='block'; return; }
+  db.collection(COL_USR).where('username','==',user).limit(1).get()
+    .then(function(snap) {
+      if (!snap.empty) { errEl.textContent='Ese usuario ya existe.'; errEl.style.display='block'; return; }
+      hashPwd(user, pass).then(function(hash) {
+        db.collection(COL_USR).add({
+          username:     user,
+          passwordHash: hash,
+          role:         'user',
+          activo:       true,
+          creadoEn:     firebase.firestore.FieldValue.serverTimestamp()
+        }).then(function() {
+          document.getElementById('nu-user').value = '';
+          document.getElementById('nu-pass').value = '';
+          loadUsersList();
+        }).catch(function(e){ errEl.textContent='Error al crear: '+e.message; errEl.style.display='block'; });
+      });
+    })
+    .catch(function(e){ errEl.textContent='Error: '+e.message; errEl.style.display='block'; });
+};
+
+function toggleUser(docId, newActivo) {
+  if (!fbReady()) return;
+  db.collection(COL_USR).doc(docId).update({ activo: newActivo })
+    .then(function() { loadUsersList(); })
+    .catch(function(e){ alert('Error al actualizar: '+e.message); });
+}
+
+function deleteUser(docId, username) {
+  if (!confirm('¿Eliminar al usuario "'+username+'"?\nEsta acción no se puede deshacer.')) return;
+  if (!fbReady()) return;
+  db.collection(COL_USR).doc(docId).delete()
+    .then(function() { loadUsersList(); })
+    .catch(function(e){ alert('Error al eliminar: '+e.message); });
+}
+
+/* ══════════════════════════════════════════
    LIMPIAR
 ══════════════════════════════════════════ */
 window.limpiar = function() {
@@ -1193,14 +1492,20 @@ function init() {
   document.getElementById('f-unidad').addEventListener('change', function(){setUnitLabel(this.value); save();});
   document.getElementById('f-fecha').addEventListener('change', save);
   document.getElementById('f-revisor').addEventListener('input', save);
-  /* Tecla Enter en nueva unidad */
   document.getElementById('new-unit-inp').addEventListener('keydown',function(e){if(e.key==='Enter')addUnit();});
-  /* Cargar localStorage */
+  /* Enter en formulario de login */
+  document.getElementById('login-user').addEventListener('keydown',function(e){if(e.key==='Enter') document.getElementById('login-pass').focus();});
+  document.getElementById('login-pass').addEventListener('keydown',function(e){if(e.key==='Enter') doLogin();});
   load(); recalc();
-  /* Inicializar Firebase si hay config guardada */
   var cfg=getStoredFbConfig();
-  if(cfg && initFb(cfg)) setSaveStatus('ok','✓ Firebase conectado','Proyecto: '+cfg.projectId);
-  else setSaveStatus('idle','💾 Sin guardar','Firebase no configurado — haz clic en 🔥');
+  if(cfg && initFb(cfg)) {
+    setSaveStatus('ok','✓ Firebase conectado','Proyecto: '+cfg.projectId);
+    bootstrapAdmin();
+    initAuth();
+  } else {
+    setSaveStatus('idle','&#128190; Sin guardar','Firebase no configurado');
+    document.getElementById('login-overlay').style.display = 'flex';
+  }
 }
 
 init();
