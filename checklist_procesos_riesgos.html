@@ -139,7 +139,7 @@ body.role-admin .admin-only { display: inline-flex !important; }
 .tbl-wrap { overflow-x: auto; border: 1px solid #c0cce0; border-top: none; margin-bottom: 18px; border-radius: 0 0 8px 8px; }
 table { width: 100%; border-collapse: collapse; min-width: 560px; }
 thead th { background: var(--az1); color: #fff; padding: 8px 6px; text-align: center; font-size: 12px; font-weight: 700; border: 1px solid rgba(255,255,255,.14); white-space: normal; text-transform: uppercase; line-height: 1.3; }
-thead th.th-l { text-align: left; }
+thead th.th-l { text-align: center; }
 tbody tr { transition: background-color .22s; }
 tbody tr:nth-child(even) { background: #f5f8ff; }
 tbody tr:nth-child(odd)  { background: #fff; }
@@ -147,15 +147,15 @@ tbody tr.s-si   td.td-col-si   { background: var(--verde-bg) !important; }
 tbody tr.s-no   td.td-col-no   { background: var(--rojo-bg)  !important; }
 tbody tr.s-proc td.td-col-proc { background: var(--amar-bg)  !important; }
 td { padding: 6px 5px; border: 1px solid #d4dcea; vertical-align: middle; font-size: 20px; }
-td.td-n  { text-align: center; font-weight: 700; color: var(--az2); width: 30px; padding: 6px 4px; }
-td.td-r  { text-align: center; width: 52px; padding: 6px 4px; }
+td.td-n  { text-align: center; font-weight: 700; color: var(--az2); width: 20px; padding: 5px 2px; }
+td.td-r  { text-align: center; width: 20px; padding: 3px 2px; }
 td.td-d  { font-size: 20px; }
 td.td-ob { min-width: 120px; }
 
 /* Checkboxes (radio styled) */
-.chk { appearance: none; -webkit-appearance: none; width: 18px; height: 18px; border: 2px solid #aab4c8; border-radius: 4px; cursor: pointer; position: relative; display: inline-block; vertical-align: middle; transition: all .18s; }
+.chk { appearance: none; -webkit-appearance: none; width: 16px; height: 16px; border: 2px solid #aab4c8; border-radius: 3px; cursor: pointer; position: relative; display: inline-block; vertical-align: middle; transition: all .18s; }
 .chk:hover:not(:checked) { border-color: var(--az2); background: #ebf0ff; }
-.chk:checked::after { content: '✓'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 12px; font-weight: 900; color: #fff; line-height: 1; }
+.chk:checked::after { content: '✓'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 11px; font-weight: 900; color: #fff; line-height: 1; }
 .chk-si:checked   { background: #28a745; border-color: #28a745; }
 .chk-no:checked   { background: #dc3545; border-color: #dc3545; }
 .chk-proc:checked { background: #c78b00; border-color: #c78b00; }
@@ -332,12 +332,11 @@ td.td-ob { min-width: 120px; }
   .tbl-wrap { overflow: visible !important; border-radius: 0 !important; border: 1px solid #b0bccf !important; border-top: none !important; margin-bottom: 12px !important; }
   table { min-width: auto !important; font-size: 14pt !important; }
   thead th { background: #d6e4f7 !important; color: #1F3864 !important; font-size: 12pt !important; padding: 5px 3px !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-  thead th[style*="width:30px"] { width: 30px !important; }
-  thead th[style*="width:50px"] { width: 50px !important; }
+  thead th[style*="width:20px"] { width: 20px !important; padding: 4px 1px !important; }
   thead th[style*="width:65px"] { width: 65px !important; }
   td { padding: 5px 4px !important; font-size: 14pt !important; border: 1px solid #c8d0e0 !important; }
-  td.td-n  { width: 30px !important; padding: 5px 4px !important; font-size: 12pt !important; }
-  td.td-r  { width: 52px !important; padding: 5px 4px !important; }
+  td.td-n  { width: 20px !important; padding: 5px 2px !important; font-size: 12pt !important; }
+  td.td-r  { width: 20px !important; padding: 3px 2px !important; }
   td.td-d  { font-size: 14pt !important; }
   tbody tr.s-si   td.td-col-si   { background: var(--verde-bg) !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   tbody tr.s-no   td.td-col-no   { background: var(--rojo-bg)  !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
@@ -525,10 +524,10 @@ td.td-ob { min-width: 120px; }
   <div class="tbl-wrap">
     <table aria-label="Sección A">
       <thead><tr>
-        <th style="width:30px">N°</th>
-        <th class="th-l" style="width:38%">Documento / Contenido</th>
-        <th style="width:50px">Sí</th>
-        <th style="width:50px">No</th>
+        <th style="width:20px">N°</th>
+        <th class="th-l" style="width:42%">Documento / Contenido</th>
+        <th style="width:20px">Sí</th>
+        <th style="width:20px">No</th>
         <th style="width:65px">En Proceso</th>
         <th style="width:28%">Observaciones</th>
       </tr></thead>
@@ -541,10 +540,10 @@ td.td-ob { min-width: 120px; }
   <div class="tbl-wrap">
     <table aria-label="Sección B">
       <thead><tr>
-        <th style="width:30px">N°</th>
-        <th class="th-l" style="width:38%">Documento / Contenido</th>
-        <th style="width:50px">Sí</th>
-        <th style="width:50px">No</th>
+        <th style="width:20px">N°</th>
+        <th class="th-l" style="width:42%">Documento / Contenido</th>
+        <th style="width:20px">Sí</th>
+        <th style="width:20px">No</th>
         <th style="width:65px">En Proceso</th>
         <th style="width:28%">Observaciones</th>
       </tr></thead>
