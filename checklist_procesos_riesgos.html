@@ -317,7 +317,7 @@ td.td-ob { min-width: 160px; }
   td.td-col-si::before, td.td-col-no::before, td.td-col-proc::before { content: '□'; font-size: 11pt; color: #ccc; display: block; text-align: center; }
   tr.s-si   td.td-col-si::before   { content: '✔'; color: #28a745 !important; font-weight: 900; }
   tr.s-no   td.td-col-no::before   { content: '✖'; color: #dc3545 !important; font-weight: 900; }
-  tr.s-proc td.td-col-proc::before { content: '◑'; color: #c78b00 !important; font-weight: 900; }
+  tr.s-proc td.td-col-proc::before { content: '✔'; color: #c78b00 !important; font-weight: 900; }
   .obs { border: none !important; resize: none !important; padding: 0 !important; font-size: 8pt !important; background: transparent !important; min-height: auto !important; }
   .resumen { border: 1.5px solid var(--az2) !important; padding: 8px 12px !important; margin-bottom: 8px !important; page-break-inside: avoid; }
   .chip-n { font-size: 16pt !important; }
@@ -1117,7 +1117,7 @@ window.exportCSV = function() {
       C(doc, 's_t')+
       C(st==='si'   ? '✔' : '', st==='si'   ? 's_si_on' : 's_si_off')+
       C(st==='no'   ? '✖' : '', st==='no'   ? 's_no_on' : 's_no_off')+
-      C(st==='proc' ? '◑' : '', st==='proc' ? 's_p_on'  : 's_p_off')+
+      C(st==='proc' ? '✔' : '', st==='proc' ? 's_p_on'  : 's_p_off')+
       C(obs, 's_t')+
     '</Row>';
   }
