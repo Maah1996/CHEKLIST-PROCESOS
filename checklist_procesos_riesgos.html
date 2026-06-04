@@ -9,7 +9,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
-<style id="sty-page">@page { size: A4 portrait; margin: 13mm 12mm 16mm; }</style>
+<style id="sty-page">@page { size: A4 portrait; margin: 20mm 18mm 22mm; }</style>
 <style>
 /* ===== RESET ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -54,7 +54,7 @@ body { font-family: 'Times New Roman', Times, serif; font-size: 20px; background
 .unidad-row { display: flex; gap: 6px; align-items: center; }
 .select-unidad {
   flex: 1; border: 1px solid #bcc8da; border-radius: 5px;
-  padding: 7px 10px; font-size: 13px; font-family: inherit;
+  padding: 7px 10px; font-size: 16px; font-family: inherit;
   background: #fff; cursor: pointer; appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 10px center;
@@ -71,7 +71,7 @@ body { font-family: 'Times New Roman', Times, serif; font-size: 20px; background
 
 .campo input, .campo .fake-input {
   border: 1px solid #bcc8da; border-radius: 5px;
-  padding: 7px 10px; font-size: 13px; font-family: inherit; width: 100%;
+  padding: 7px 10px; font-size: 16px; font-family: inherit; width: 100%;
 }
 .campo input:focus { outline: none; border-color: var(--az2); box-shadow: 0 0 0 3px rgba(46,84,150,.15); }
 
@@ -140,6 +140,16 @@ body.role-admin .admin-only { display: inline-flex !important; }
 table { width: 100%; border-collapse: collapse; min-width: 560px; }
 thead th { background: var(--az1); color: #fff; padding: 8px 6px; text-align: center; font-size: 12px; font-weight: 700; border: 1px solid rgba(255,255,255,.14); white-space: normal; text-transform: uppercase; line-height: 1.3; }
 thead th.th-l { text-align: center; }
+/* Columnas Sí / No / En Proceso — mismo ancho fijo en pantalla */
+thead th[style*="width:20px"],
+thead th.th-proc {
+  width: 48px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  font-size: 10px !important;
+  padding: 6px 2px !important;
+  overflow: hidden;
+}
 tbody tr { transition: background-color .22s; }
 tbody tr:nth-child(even) { background: #f5f8ff; }
 tbody tr:nth-child(odd)  { background: #fff; }
@@ -147,8 +157,8 @@ tbody tr.s-si   td.td-col-si   { background: var(--verde-bg) !important; }
 tbody tr.s-no   td.td-col-no   { background: var(--rojo-bg)  !important; }
 tbody tr.s-proc td.td-col-proc { background: var(--amar-bg)  !important; }
 td { padding: 6px 5px; border: 1px solid #d4dcea; vertical-align: middle; font-size: 20px; }
-td.td-n  { text-align: center; font-weight: 700; color: var(--az2); width: 20px; padding: 5px 2px; }
-td.td-r  { text-align: center; width: 20px; padding: 3px 2px; }
+td.td-n  { text-align: center; font-weight: 700; color: var(--az2); width: 48px; min-width: 48px; max-width: 48px; padding: 5px 2px; }
+td.td-r  { text-align: center; width: 48px; min-width: 48px; max-width: 48px; padding: 3px 2px; }
 td.td-d  { font-size: 20px; }
 td.td-ob { min-width: 120px; }
 
@@ -330,14 +340,16 @@ td.td-ob { min-width: 120px; }
   .semaforo { display: none !important; }
   .sec-hdr { background: var(--az2) !important; font-size: 12pt !important; padding: 5px 10px !important; page-break-after: avoid; }
   .tbl-wrap { overflow: visible !important; border-radius: 0 !important; border: 1px solid #b0bccf !important; border-top: none !important; margin-bottom: 12px !important; }
-  table { min-width: auto !important; font-size: 14pt !important; }
-  thead th { background: #d6e4f7 !important; color: #1F3864 !important; font-size: 12pt !important; padding: 5px 3px !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-  thead th[style*="width:20px"] { width: 20px !important; padding: 4px 1px !important; }
-  thead th[style*="width:65px"] { width: 65px !important; }
-  td { padding: 5px 4px !important; font-size: 14pt !important; border: 1px solid #c8d0e0 !important; }
-  td.td-n  { width: 20px !important; padding: 5px 2px !important; font-size: 12pt !important; }
-  td.td-r  { width: 20px !important; padding: 3px 2px !important; }
-  td.td-d  { font-size: 14pt !important; }
+  /* tabla: auto-layout para que observaciones tome el espacio que necesita */
+  table { min-width: auto !important; font-size: 9pt !important; width: 100% !important; table-layout: auto !important; }
+  thead th { background: #d6e4f7 !important; color: #1F3864 !important; font-size: 8pt !important; padding: 4px 3px !important; border: 1px solid #555 !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; word-break: break-word !important; }
+  thead th[style*="width:20px"] { width: 28px !important; padding: 4px 1px !important; }
+  thead th.th-proc { width: 38px !important; padding: 4px 1px !important; font-size: 6pt !important; letter-spacing: 0 !important; word-break: break-word !important; }
+  td { padding: 4px 5px !important; font-size: 9pt !important; border: 1px solid #555 !important; word-break: break-word !important; overflow-wrap: break-word !important; vertical-align: top !important; text-align: left !important; }
+  td.td-n  { width: 24px !important; padding: 4px 2px !important; font-size: 8pt !important; text-align: center !important; border: 1px solid #555 !important; }
+  td.td-r  { width: 24px !important; padding: 3px 2px !important; text-align: center !important; border: 1px solid #555 !important; }
+  td.td-d  { font-size: 9pt !important; max-width: 200px !important; text-align: justify !important; }
+  td.td-ob { width: 32% !important; text-align: left !important; }
   tbody tr.s-si   td.td-col-si   { background: var(--verde-bg) !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   tbody tr.s-no   td.td-col-no   { background: var(--rojo-bg)  !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   tbody tr.s-proc td.td-col-proc { background: var(--amar-bg)  !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
@@ -346,7 +358,22 @@ td.td-ob { min-width: 120px; }
   tr.s-si   td.td-col-si::before   { content: '✔'; color: #28a745 !important; font-weight: 900; }
   tr.s-no   td.td-col-no::before   { content: '✖'; color: #dc3545 !important; font-weight: 900; }
   tr.s-proc td.td-col-proc::before { content: '✔'; color: #c78b00 !important; font-weight: 900; }
-  .obs { border: none !important; resize: none !important; padding: 0 !important; font-size: 13pt !important; background: transparent !important; min-height: auto !important; }
+  .obs { display: none !important; }
+  .obs-print-div {
+    font-size: 8.5pt !important;
+    background: transparent !important;
+    white-space: normal !important;
+    text-align: justify !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-family: 'Times New Roman', Times, serif !important;
+    line-height: 1.4 !important;
+    display: block !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
   .resumen { border: 1.5px solid var(--az2) !important; padding: 8px 12px !important; margin-bottom: 8px !important; page-break-inside: avoid; }
   .chip-n { font-size: 16pt !important; }
   .leyenda { display: none !important; }
@@ -528,7 +555,7 @@ td.td-ob { min-width: 120px; }
         <th class="th-l" style="width:42%">Documento / Contenido</th>
         <th style="width:20px">Sí</th>
         <th style="width:20px">No</th>
-        <th style="width:65px">En Proceso</th>
+        <th class="th-proc" style="width:65px">En<br>Proceso</th>
         <th style="width:28%">Observaciones</th>
       </tr></thead>
       <tbody id="tbody-a"></tbody>
@@ -544,7 +571,7 @@ td.td-ob { min-width: 120px; }
         <th class="th-l" style="width:42%">Documento / Contenido</th>
         <th style="width:20px">Sí</th>
         <th style="width:20px">No</th>
-        <th style="width:65px">En Proceso</th>
+        <th class="th-proc" style="width:65px">En<br>Proceso</th>
         <th style="width:28%">Observaciones</th>
       </tr></thead>
       <tbody id="tbody-b"></tbody>
@@ -582,6 +609,24 @@ td.td-ob { min-width: 120px; }
 </div><!-- /wrap -->
 
 <!-- ══════════════════════════════════════════
+     MODAL: CONFIRMAR ELIMINACIÓN
+══════════════════════════════════════════ -->
+<div id="confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99997;align-items:center;justify-content:center;backdrop-filter:blur(3px)">
+  <div style="background:#fff;border-radius:14px;padding:30px 32px 24px;width:400px;max-width:92vw;box-shadow:0 24px 70px rgba(0,0,0,.35)">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="width:52px;height:52px;border-radius:50%;background:#fde8e8;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:24px">&#128465;</div>
+      <h3 style="font-size:17px;font-weight:800;color:#1F3864;margin-bottom:10px">Confirmar eliminación</h3>
+      <div id="confirm-body" style="font-size:14px;color:#555;line-height:1.7;text-align:left;background:#f8f9fc;border:1px solid #e0e8f0;border-radius:8px;padding:12px 14px"></div>
+      <p style="font-size:12px;color:#c82333;margin-top:12px;font-weight:600">&#9888; Esta acción no se puede deshacer.</p>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button id="confirm-cancel-btn" style="flex:1;padding:11px;border:none;border-radius:7px;background:#e8ecf2;color:#333;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Cancelar</button>
+      <button id="confirm-ok-btn"     style="flex:1;padding:11px;border:none;border-radius:7px;background:#c82333;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
      OVERLAY: LOGIN
 ══════════════════════════════════════════ -->
 <div id="login-overlay" style="position:fixed;inset:0;background:rgba(15,27,55,.93);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
@@ -607,6 +652,52 @@ td.td-ob { min-width: 120px; }
     </div>
     <div id="login-error" style="display:none;font-size:12px;color:#c82333;background:#f8d7da;border-radius:5px;padding:7px 10px;margin-bottom:12px"></div>
     <button onclick="doLogin()" style="width:100%;padding:11px;border:none;border-radius:7px;background:var(--az1);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Ingresar</button>
+
+    <!-- Enlace recuperar contraseña -->
+    <div style="text-align:center;margin-top:14px">
+      <button onclick="toggleRecuperar()" style="background:none;border:none;color:#2E5496;font-size:12px;cursor:pointer;text-decoration:underline;font-family:inherit;padding:0">
+        &#128273; ¿Olvidaste tu contraseña?
+      </button>
+    </div>
+
+    <!-- Panel de recuperación -->
+    <div id="recuperar-panel" style="display:none;margin-top:14px;background:#f0f5ff;border:1px solid #c8d4e8;border-radius:8px;padding:14px">
+      <div style="font-size:12px;font-weight:700;color:#1F3864;margin-bottom:8px;text-align:center">
+        &#128274; Recuperar contraseña
+      </div>
+      <!-- Vista: pedir admin (por defecto) -->
+      <div id="rec-vista-admin" style="text-align:center">
+        <p style="font-size:12px;color:#555;margin-bottom:10px">
+          Pide al <strong>administrador</strong> que restablezca tu clave desde el panel de Usuarios.
+        </p>
+        <p style="font-size:11px;color:#888">
+          &#8212; O si eres el administrador &#8212;
+        </p>
+        <button onclick="mostrarResetAdmin()" style="margin-top:8px;background:#1F3864;color:#fff;border:none;border-radius:5px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">
+          Soy administrador
+        </button>
+      </div>
+      <!-- Vista: admin resetea su propia clave -->
+      <div id="rec-vista-reset" style="display:none">
+        <p style="font-size:11px;color:#666;margin-bottom:8px">Ingresa usuario <strong>admin</strong> y define una nueva contraseña:</p>
+        <input id="rec-user" type="text" placeholder="Usuario admin" autocomplete="off"
+          style="width:100%;border:1px solid #bcc8da;border-radius:5px;padding:7px 10px;font-size:12px;font-family:inherit;margin-bottom:6px;box-sizing:border-box">
+        <input id="rec-pass-nueva" type="password" placeholder="Nueva contraseña (mín. 6 car.)" autocomplete="new-password"
+          style="width:100%;border:1px solid #bcc8da;border-radius:5px;padding:7px 10px;font-size:12px;font-family:inherit;margin-bottom:6px;box-sizing:border-box">
+        <input id="rec-pass-conf" type="password" placeholder="Confirmar nueva contraseña" autocomplete="new-password"
+          style="width:100%;border:1px solid #bcc8da;border-radius:5px;padding:7px 10px;font-size:12px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
+        <div id="rec-error" style="display:none;font-size:11px;color:#c82333;background:#f8d7da;border-radius:4px;padding:6px 8px;margin-bottom:8px"></div>
+        <div id="rec-ok"    style="display:none;font-size:11px;color:#1e7e34;background:#d4edda;border-radius:4px;padding:6px 8px;margin-bottom:8px"></div>
+        <div style="display:flex;gap:8px">
+          <button onclick="doResetAdmin()" style="flex:1;background:#1F3864;color:#fff;border:none;border-radius:5px;padding:7px 0;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">
+            Restablecer
+          </button>
+          <button onclick="mostrarResetAdmin(false)" style="background:#eee;border:1px solid #ccc;border-radius:5px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:inherit">
+            Volver
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -960,7 +1051,7 @@ window.loadHistory = function() {
         /* Eliminar solo admin */
         if (sess && sess.role === 'admin') {
           var btnD = document.createElement('button');
-          btnD.className = 'btn-hist-del'; btnD.textContent = '&#128465;';
+          btnD.className = 'btn-hist-del'; btnD.textContent = 'Eliminar';
           btnD.title = 'Eliminar: ' + (d.unidad||'') + ' — ' + (d.fecha||'');
           btnD.addEventListener('click', function() {
             eliminarHistorial(docId, item, d.unidad||'', d.fecha||'');
@@ -998,16 +1089,36 @@ function cargarChecklist(docId, d) {
   setSaveStatus('ok','✓ Cargado desde Firebase','ID: '+docId.slice(0,8)+'…');
 }
 
+/* Modal de confirmación profesional */
+function confirmarEliminar(cuerpoHtml, onConfirm) {
+  var modal   = document.getElementById('confirm-modal');
+  var btnOk   = document.getElementById('confirm-ok-btn');
+  var btnCan  = document.getElementById('confirm-cancel-btn');
+  document.getElementById('confirm-body').innerHTML = cuerpoHtml;
+  modal.style.display = 'flex';
+  function cerrar() {
+    modal.style.display = 'none';
+    btnOk.removeEventListener('click', aceptar);
+    btnCan.removeEventListener('click', cerrar);
+    modal.removeEventListener('click', fondoClic);
+  }
+  function aceptar() { cerrar(); onConfirm(); }
+  function fondoClic(e) { if (e.target === modal) cerrar(); }
+  btnOk.addEventListener('click', aceptar);
+  btnCan.addEventListener('click', cerrar);
+  modal.addEventListener('click', fondoClic);
+}
+
 function eliminarHistorial(docId, itemEl, unidad, fecha) {
-  if (!confirm(
-    '¿Eliminar este registro?\n\n' +
-    'Unidad: ' + unidad + '\n' +
-    'Fecha:  ' + fecha  + '\n\n' +
-    'Esta acción no se puede deshacer.'
-  )) return;
-  db.collection(COL).doc(docId).delete()
-    .then(function() { if (itemEl && itemEl.parentNode) itemEl.parentNode.removeChild(itemEl); })
-    .catch(function(e) { alert('Error al eliminar: ' + e.message); });
+  confirmarEliminar(
+    '<strong>Unidad:</strong>&nbsp;' + esc(unidad) + '<br>' +
+    '<strong>Fecha:&nbsp;&nbsp;</strong>&nbsp;' + esc(fecha),
+    function() {
+      db.collection(COL).doc(docId).delete()
+        .then(function() { if (itemEl && itemEl.parentNode) itemEl.parentNode.removeChild(itemEl); })
+        .catch(function(e) { alert('Error al eliminar: ' + e.message); });
+    }
+  );
 }
 
 /* ══════════════════════════════════════════
@@ -1115,17 +1226,49 @@ window.doPrint = function() {
 window.addEventListener('beforeprint', function() {
   document._origTitle = document.title;
   document.title = ' ';
+
+  /* Campos de texto del encabezado */
   document.querySelectorAll('.campo input, .select-unidad').forEach(function(inp){
-    var span=document.createElement('span'); span.className='print-val';
-    span.textContent=inp.value||'—'; inp.insertAdjacentElement('afterend',span);
+    var span = document.createElement('span');
+    span.className = 'print-val';
+    var val = inp.value || '—';
+    /* Fecha: convertir YYYY-MM-DD → DD/MM/YYYY */
+    if (inp.type === 'date' && inp.value) {
+      var p = inp.value.split('-');
+      if (p.length === 3) val = p[2] + '/' + p[1] + '/' + p[0];
+    }
+    span.textContent = val;
+    inp.insertAdjacentElement('afterend', span);
   });
-  var u=document.getElementById('f-unidad').value||'—';
-  var now=new Date();
-  document.getElementById('pf-unidad').textContent='Unidad: '+u;
-  document.getElementById('pf-fecha-imp').textContent='Impreso: '+now.toLocaleString('es-CL');
+
+  /* ── CLAVE: reemplazar cada textarea .obs por un <div> con el
+     texto completo — los navegadores siempre recortan textareas al imprimir ── */
+  document.querySelectorAll('textarea.obs').forEach(function(ta) {
+    var div = document.createElement('div');
+    div.className = 'obs-print-div';
+    div.dataset.obsRestore = 'true';
+    /* Convertir saltos de línea en <br> para que se vean en el div */
+    var texto = ta.value || '';
+    texto.split('\n').forEach(function(linea, i, arr) {
+      div.appendChild(document.createTextNode(linea));
+      if (i < arr.length - 1) div.appendChild(document.createElement('br'));
+    });
+    div.style.cssText = 'width:100%;font-family:inherit;font-size:8.5pt;white-space:normal;text-align:justify;word-break:break-word;overflow-wrap:break-word;padding:0;margin:0;line-height:1.4;display:block;overflow:visible;';
+    ta.style.display = 'none';
+    ta.insertAdjacentElement('afterend', div);
+  });
+
+  var u = document.getElementById('f-unidad').value || '—';
+  var now = new Date();
+  document.getElementById('pf-unidad').textContent = 'Unidad: ' + u;
+  document.getElementById('pf-fecha-imp').textContent = 'Impreso: ' + now.toLocaleString('es-CL');
 });
+
 window.addEventListener('afterprint', function() {
-  document.querySelectorAll('.print-val').forEach(function(s){s.remove();});
+  /* Restaurar textareas */
+  document.querySelectorAll('[data-obs-restore]').forEach(function(div){ div.remove(); });
+  document.querySelectorAll('textarea.obs').forEach(function(ta){ ta.style.display = ''; });
+  document.querySelectorAll('.print-val').forEach(function(s){ s.remove(); });
   document.title = document._origTitle || 'Checklist — Archivador de Procesos y Riesgos';
 });
 
@@ -1471,6 +1614,15 @@ function loadUsersList() {
           btnT.style.marginLeft = 'auto';
           btnT.addEventListener('click', (function(id, act){ return function(){ toggleUser(id,!act); }; })(docSnap.id, d.activo));
           item.appendChild(btnT);
+          /* Restablecer contraseña */
+          var btnR = document.createElement('button');
+          btnR.className = 'btn-u-toggle';
+          btnR.textContent = '&#128273; Clave';
+          btnR.title = 'Restablecer contraseña';
+          btnR.style.background = '#2E5496';
+          btnR.style.color = '#fff';
+          btnR.addEventListener('click', (function(id, nm){ return function(){ resetUserPwd(id, nm); }; })(docSnap.id, d.username));
+          item.appendChild(btnR);
           /* Solo se puede eliminar usuarios no-admin */
           if (d.role !== 'admin') {
             var btnD = document.createElement('button');
@@ -1583,6 +1735,111 @@ function init() {
 }
 
 init();
+
+/* ══════════════════════════════════════════
+   RECUPERAR CONTRASEÑA — Login overlay
+══════════════════════════════════════════ */
+window.toggleRecuperar = function() {
+  var panel = document.getElementById('recuperar-panel');
+  var visible = panel.style.display !== 'none';
+  panel.style.display = visible ? 'none' : 'block';
+  if (!visible) {
+    /* Resetear al abrir */
+    mostrarResetAdmin(false);
+    document.getElementById('rec-error').style.display = 'none';
+    document.getElementById('rec-ok').style.display    = 'none';
+    document.getElementById('rec-user').value = '';
+    document.getElementById('rec-pass-nueva').value = '';
+    document.getElementById('rec-pass-conf').value  = '';
+  }
+};
+
+window.mostrarResetAdmin = function(mostrar) {
+  var admin = document.getElementById('rec-vista-admin');
+  var reset = document.getElementById('rec-vista-reset');
+  if (mostrar === false || mostrar === undefined && reset.style.display !== 'none') {
+    admin.style.display = 'block';
+    reset.style.display = 'none';
+  } else {
+    admin.style.display = 'none';
+    reset.style.display = 'block';
+  }
+};
+
+/* Restablecer clave desde el panel de login (solo admin) */
+window.doResetAdmin = function() {
+  var user   = (document.getElementById('rec-user').value || '').trim().toLowerCase();
+  var nueva  = document.getElementById('rec-pass-nueva').value || '';
+  var conf   = document.getElementById('rec-pass-conf').value  || '';
+  var errEl  = document.getElementById('rec-error');
+  var okEl   = document.getElementById('rec-ok');
+  errEl.style.display = 'none';
+  okEl.style.display  = 'none';
+
+  if (!user)          { errEl.textContent = 'Ingresa el nombre de usuario.'; errEl.style.display='block'; return; }
+  if (nueva.length<6) { errEl.textContent = 'La contraseña debe tener al menos 6 caracteres.'; errEl.style.display='block'; return; }
+  if (nueva !== conf) { errEl.textContent = 'Las contraseñas no coinciden.'; errEl.style.display='block'; return; }
+  if (!fbReady())     { errEl.textContent = 'Sin conexión a Firebase.'; errEl.style.display='block'; return; }
+
+  /* Buscar usuario en Firestore */
+  db.collection(COL_USR).where('username','==',user).limit(1).get()
+    .then(function(snap) {
+      if (snap.empty) {
+        errEl.textContent = 'Usuario no encontrado.';
+        errEl.style.display = 'block';
+        return;
+      }
+      var docSnap = snap.docs[0];
+      /* Verificar que sea admin */
+      if (docSnap.data().role !== 'admin') {
+        errEl.textContent = 'Solo un administrador puede resetear desde aquí.';
+        errEl.style.display = 'block';
+        return;
+      }
+      hashPwd(user, nueva).then(function(hash) {
+        return db.collection(COL_USR).doc(docSnap.id).update({ passwordHash: hash });
+      }).then(function() {
+        okEl.textContent = '✓ Contraseña restablecida. Ya puedes iniciar sesión con la nueva clave.';
+        okEl.style.display = 'block';
+        document.getElementById('rec-pass-nueva').value = '';
+        document.getElementById('rec-pass-conf').value  = '';
+      }).catch(function(e) {
+        errEl.textContent = 'Error al actualizar: ' + e.message;
+        errEl.style.display = 'block';
+      });
+    })
+    .catch(function(e) {
+      errEl.textContent = 'Error de conexión: ' + e.message;
+      errEl.style.display = 'block';
+    });
+};
+
+/* ══════════════════════════════════════════
+   RESTABLECER CLAVE DESDE PANEL DE ADMIN
+══════════════════════════════════════════ */
+window.resetUserPwd = function(docId, username) {
+  var nueva = prompt('Nueva contraseña para "' + username + '" (mínimo 6 caracteres):');
+  if (nueva === null) return; /* Cancelado */
+  if (!nueva || nueva.length < 6) {
+    alert('La contraseña debe tener al menos 6 caracteres.');
+    return;
+  }
+  var conf = prompt('Confirma la nueva contraseña:');
+  if (conf === null) return;
+  if (nueva !== conf) {
+    alert('Las contraseñas no coinciden. Inténtalo de nuevo.');
+    return;
+  }
+  if (!fbReady()) { alert('Sin conexión a Firebase.'); return; }
+
+  hashPwd(username, nueva).then(function(hash) {
+    return db.collection(COL_USR).doc(docId).update({ passwordHash: hash });
+  }).then(function() {
+    alert('✓ Contraseña de "' + username + '" restablecida correctamente.');
+  }).catch(function(e) {
+    alert('Error al restablecer: ' + e.message);
+  });
+};
 
 }());
 </script>
