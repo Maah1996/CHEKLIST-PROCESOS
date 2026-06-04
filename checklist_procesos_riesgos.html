@@ -1546,7 +1546,7 @@ function applyRole(session) {
   }
   if (session.role === 'admin') body.classList.add('role-admin');
   else                          body.classList.add('role-user');
-  if (lbl)  { lbl.textContent = '&#128100; ' + session.username; lbl.style.display = 'inline'; }
+  if (lbl)  { lbl.textContent = '👤 ' + session.username; lbl.style.display = 'inline'; }
   if (btnL)   btnL.style.display = 'inline-block';
 }
 
