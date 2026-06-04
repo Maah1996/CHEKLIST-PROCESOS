@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- build: 2026-06-04-1530 -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -6,6 +7,19 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+<!-- Cache buster: fuerza recarga si la versión cambió -->
+<script>
+(function(){
+  var V='2026-06-04-1530';
+  var k='chk_build';
+  if(localStorage.getItem(k)!==V){
+    localStorage.setItem(k,V);
+    if(location.search.indexOf('v=')===-1){
+      location.replace(location.pathname+'?v='+V);
+    }
+  }
+})();
+</script>
 <title>Checklist — Archivador de Procesos y Riesgos</title>
 
 <!-- Firebase SDK (compat) -->
